@@ -1,0 +1,87 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker --version:*)",
+      "Bash(docker compose version:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker run:*)",
+      "Bash(MSYS_NO_PATHCONV=1 docker run:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker compose down:*)",
+      "Bash(docker compose restart:*)",
+      "Bash(docker compose build:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(docker restart:*)",
+      "Bash(docker cp:*)",
+      "Bash(docker logs:*)",
+
+      "Bash(git fetch:*)",
+      "Bash(git status:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git ls-remote:*)",
+
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(diff:*)",
+      "Bash(stat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(echo:*)",
+      "Bash(tr:*)",
+      "Bash(sort:*)",
+      "Bash(mkdir:*)",
+      "Bash(sleep:*)",
+      "Bash(test:*)",
+      "Bash(pwd:*)",
+
+      "Write(doc-dev/**)",
+      "Edit(doc-dev/**)",
+      "Write(**/tests/**)",
+      "Edit(**/tests/**)",
+      "Write(**/static/tests/tours/**)",
+      "Edit(**/static/tests/tours/**)",
+      "Write(**/docker-env/**)",
+      "Edit(**/docker-env/**)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+
+      "Edit(**/models/**)",
+      "Write(**/models/**)",
+      "Edit(**/controllers/**)",
+      "Write(**/controllers/**)",
+      "Edit(**/views/**)",
+      "Write(**/views/**)",
+      "Edit(**/wizard/**)",
+      "Write(**/wizard/**)",
+      "Edit(**/data/**)",
+      "Write(**/data/**)",
+      "Edit(**/security/**)",
+      "Write(**/security/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >> .claude/backfill-command-log.jsonl"
+          }
+        ]
+      }
+    ]
+  }
+}
