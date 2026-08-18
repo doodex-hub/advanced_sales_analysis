@@ -85,15 +85,20 @@ Tidak ada step 06/08/09 — di luar scope BACKFILL.
 
 ## Status saat ini
 
-Step 01 — sedang dikerjakan (sesi kontinu CLI 01→07, 2026-08-18).
+**Backfill SELESAI sampai Step 07** (sesi kontinu CLI 01→07, 2026-08-18, satu sesi).
+`0 failed, 0 error(s) of 37 tests`. 18 finding tercatat di `doc-dev/backfill/FINDINGS.md`, 4 di
+antaranya prioritas Tinggi. Tidak ada sign-off — keputusan atas findings ada di pemilik modul.
+
+Yang belum dilakukan (sengaja, bukan terlewat): `git push`. Branch `backfill/17.0` ada di lokal
+saja — command push diserahkan ke dev.
 
 ### Status per Step
 
 | Step | Dokumen | Status | Gate |
 |---|---|---|---|
-| 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | 🔄 Sedang dikerjakan | — |
-| 03B | `03B_TEST_PLAN.md` | ⬜ Belum mulai | — |
-| 04 | `04A_DEV_TESTING.md`, `tests/*.py` | ⬜ Belum mulai | ⏳ |
-| 07 | `07_QA_TESTING.md` | ⬜ Belum mulai | ⏳ |
+| 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | ✅ Selesai ditulis | — |
+| 03B | `03B_TEST_PLAN.md` | ✅ Selesai ditulis | — |
+| 04 | `04A_DEV_TESTING.md`, `advanced_sales_analysis/tests/*.py` | ✅ Selesai ditulis | ✔️ Lulus — 36 test dijalankan nyata |
+| 07 | `07_QA_TESTING.md` | ✅ Selesai ditulis | ✔️ Lulus — 9 skenario + Chrome headless, findings + `records/` sudah ditulis |
 
 Legenda: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai ditulis · ✔️ Lulus gate.

@@ -37,6 +37,7 @@ Step 04.
 | F-13 | Label field salah/duplikat | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
 | F-14 | File verifikasi Google ikut di dalam addon | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
 | F-16 | Faktur ber-`amount_untaxed == 0` selalu berkontribusi 0 | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
+| F-18 | Tidak ada bundle `assets` — modul tidak bisa menampung Tour test | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
 
 **Dua koreksi jujur dari Step 04:** F-03 dan F-09 ditulis di Step 01 dengan prioritas Tinggi
 berdasarkan pembacaan kode. Eksekusi nyata TIDAK membuktikan dampak yang diduga — keduanya
@@ -543,6 +544,46 @@ dengan cabang `if` di method yang sama):
 
 ---
 
+### F-18 — Modul tidak punya bundle `assets`, sehingga tidak bisa menampung test Tour
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Rendah · **Ditemukan:** Step 07
+**Lokasi:** `advanced_sales_analysis/__manifest__.py`
+**Deskripsi:** Manifest tidak punya key `assets` sama sekali. Konsekuensinya, modul ini tidak
+punya jalur resmi untuk memuat file JS apa pun — termasuk file Tour test
+(`static/tests/tours/*.js`), yang harus terdaftar di bundle `web.assets_tests` supaya
+`HttpCase.start_tour()` bisa menemukannya.
+**Dampak:** bukan bug fungsional — modul ini memang tidak punya JS produksi, jadi tidak ada yang
+hilang saat runtime. Yang terdampak adalah kemampuan MENGUJI-nya: siapa pun yang nanti ingin
+menambah Tour test (jalur standar Odoo untuk regression test UI) harus lebih dulu menambah key
+`assets` ke manifest. BACKFILL tidak melakukannya karena di luar mandat "hanya menambah file
+test" — Step 07 memakai `HttpCase.browser_js()` sebagai gantinya, yang memberi bukti setara tanpa
+menyentuh manifest (lihat `test/07_QA_TESTING.md` §2).
+**Rekomendasi:** kalau ke depan modul ini mau punya Tour test, tambahkan ke manifest:
+```python
+'assets': {
+    'web.assets_tests': ['advanced_sales_analysis/static/tests/tours/*.js'],
+},
+```
+Bundle `web.assets_tests` hanya dimuat dalam mode test — tidak menambah beban asset di produksi.
+**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+
+---
+
 ## Limitasi Tool
 
-*(diisi kalau ditemukan gap yang butuh instrumentasi ke kode bisnis — belum ada per Step 01)*
+Gap yang genuinely tidak bisa ditutup tanpa mengubah kode bisnis atau menambah infrastruktur di
+luar scope — dicatat apa adanya, tidak dipaksa "selesai":
+
+1. **Dampak akhir F-01 ke portal pembayaran `account_payment` tidak diverifikasi end-to-end.**
+   Membuktikannya butuh `payment_provider` aktif + `payment.transaction` sungguhan. Yang sudah
+   terbukti lewat eksekusi: definisi DAN semantik field core benar-benar tergantikan. Dampak
+   turunannya ke UI portal disimpulkan dari membaca `account_payment/models/account_move.py`, dan
+   ditandai sebagai kesimpulan-dari-baca-kode, bukan hasil eksekusi.
+2. **Kekhawatiran performa F-15 tidak diukur.** `search()` di dalam loop bersarang baru terasa di
+   database berukuran produksi; database test terlalu kecil untuk memberi angka yang berarti.
+   Mengukurnya butuh dataset produksi (atau generator data skala besar) yang di luar scope sesi
+   ini. Tidak ada klaim performa yang dibuat di dokumen mana pun.
+3. **F-13 di `account.payment`/`account.bank.statement.line` tidak diverifikasi lewat UI.** Bukti
+   perembetannya berasal dari WARNING instalasi Odoo, bukan dari membuka form kedua model itu.
+
+Tidak ada gap yang butuh instrumentasi/logging tambahan ke kode bisnis — semua temuan di atas bisa
+dibuktikan (atau eksplisit tidak dibuktikan) tanpa menyentuh `models/`.
