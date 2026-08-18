@@ -9,30 +9,38 @@
 > ditandai `✅ RESOLVED` + tanggal + bukti test, BUKAN dihapus.
 
 **Modul:** `advanced_sales_analysis` · **Odoo:** 17.0 · **Branch:** `backfill/17.0`
-**Terakhir diperbarui:** 2026-08-18 (Step 01)
+**Terakhir diperbarui:** 2026-08-18 (Step 04 — diverifikasi lewat eksekusi nyata, 36 test)
 
 ---
 
 ## Ringkasan
 
-| ID | Judul | Tag | Prioritas | Status |
-|---|---|---|---|---|
-| F-01 | `amount_paid`/`_compute_amount_paid` bentrok dengan core `account_payment` | `[PERLU-KEPUTUSAN]` | **Tinggi** | Terbuka |
-| F-02 | `_compute_amount_paid` tidak assign nilai di semua cabang | `[PERLU-KEPUTUSAN]` | **Tinggi** | Terbuka |
-| F-03 | Dependency melingkar antar 3 stored compute `sale.order.line` | `[PERLU-KEPUTUSAN]` | **Tinggi** | Terbuka |
-| F-04 | Deteksi uang muka lewat nama produk hardcoded `"Down payment"` | `[PERLU-KEPUTUSAN]` | **Tinggi** | Terbuka |
-| F-05 | Kolom baru `sale.report` tidak dikonversi mata uang | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-06 | Kolom baru masuk GROUP BY sekaligus di-SUM | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-07 | `ir.model.access.csv` menganggur + merujuk model tak ada | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-08 | Hook resmi `_select_additional_fields()` tidak dipakai | `[PERLU-KEPUTUSAN]` | Rendah | Terbuka |
-| F-09 | `amount_residual` bocor dari iterasi terakhir loop | `[PERLU-KEPUTUSAN]` | **Tinggi** | Terbuka |
-| F-10 | Baris DP ganda: hanya baris terakhir yang menang | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-11 | `payment_state == 'partial'` diperlakukan tidak konsisten | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-12 | `controllers/controllers.py` kosong tapi di-import | `[PERLU-KEPUTUSAN]` | Rendah | Terbuka |
-| F-13 | Label field salah/duplikat | `[PERLU-KEPUTUSAN]` | Rendah | Terbuka |
-| F-14 | File verifikasi Google ikut di dalam addon | `[PERLU-KEPUTUSAN]` | Rendah | Terbuka |
-| F-15 | `search()` di dalam loop bersarang | `[PERLU-KEPUTUSAN]` | Sedang | Terbuka |
-| F-16 | Faktur ber-`amount_untaxed == 0` selalu berkontribusi 0 | `[PERLU-KEPUTUSAN]` | Rendah | Terbuka |
+Kolom **Bukti**: `baca-kode` = belum diuji; `eksekusi` = dikonfirmasi lewat test/query DB nyata di
+Step 04.
+
+| ID | Judul | Tag | Prioritas | Bukti | Status |
+|---|---|---|---|---|---|
+| F-01 | `amount_paid`/`_compute_amount_paid` bentrok dengan core `account_payment` | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
+| F-02 | `_compute_amount_paid` tidak assign nilai di semua cabang → tersimpan NULL | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
+| F-17 | `invoice_policy == 'delivery'` diabaikan — `price_subtotal` lokal dead code | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
+| F-04 | Deteksi uang muka lewat nama produk hardcoded `"Down payment"` | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
+| F-05 | Kolom baru `sale.report` tidak dikonversi mata uang | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
+| F-06 | Kolom baru masuk GROUP BY sekaligus di-SUM | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
+| F-07 | `ir.model.access.csv` menganggur + merujuk model tak ada | `[PERLU-KEPUTUSAN]` | Sedang | baca-kode | Terbuka |
+| F-10 | Baris DP ganda: hanya baris terakhir yang menang | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
+| F-11 | `payment_state == 'partial'` diperlakukan tidak konsisten | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
+| F-15 | `search()` di dalam loop bersarang | `[PERLU-KEPUTUSAN]` | Sedang | baca-kode | Terbuka |
+| F-03 | Dependency melingkar antar 3 stored compute `sale.order.line` | `[PERLU-KEPUTUSAN]` | ~~Tinggi~~ → **Rendah** | eksekusi | Terbuka — dampak TIDAK terbukti |
+| F-09 | `amount_residual` bocor dari iterasi terakhir loop | `[PERLU-KEPUTUSAN]` | ~~Tinggi~~ → **Rendah** | eksekusi | Terbuka — dampak TIDAK terbukti |
+| F-08 | Hook resmi `_select_additional_fields()` tidak dipakai | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
+| F-12 | `controllers/controllers.py` kosong tapi di-import | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
+| F-13 | Label field salah/duplikat | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
+| F-14 | File verifikasi Google ikut di dalam addon | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
+| F-16 | Faktur ber-`amount_untaxed == 0` selalu berkontribusi 0 | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
+
+**Dua koreksi jujur dari Step 04:** F-03 dan F-09 ditulis di Step 01 dengan prioritas Tinggi
+berdasarkan pembacaan kode. Eksekusi nyata TIDAK membuktikan dampak yang diduga — keduanya
+diturunkan ke Rendah dan alasannya ditulis apa adanya di entry masing-masing, bukan dihapus.
 
 ---
 
@@ -77,6 +85,31 @@ menang adalah definisi dari modul yang di-load BELAKANGAN di registry. Kedua mod
 - Tidak ada error/warning di log instalasi untuk kelas bug ini — hanya ketahuan lewat pengecekan
   nama eksplisit.
 
+**Bukti eksekusi (Step 04, 2026-08-18) — dugaan TERKONFIRMASI, dan yang menang adalah modul ini:**
+
+```sql
+SELECT name, state FROM ir_module_module WHERE name = 'account_payment';
+--  account_payment | installed          <- benar-benar ikut terinstall
+
+SELECT f.name, f.ttype, f.store FROM ir_model_fields f
+  JOIN ir_model m ON m.id = f.model_id
+ WHERE m.model = 'account.move' AND f.name = 'amount_paid';
+--  amount_paid | float | t              <- definisi advanced_sales_analysis
+--  (definisi account_payment seharusnya: monetary | store = f)
+```
+
+Kolom fisik `amount_paid double precision` juga dibuat di tabel `account_move` — konsekuensi
+`store=True` modul ini terhadap field core yang aslinya non-stored. Test
+`test_ac_01_03_semantik_amount_paid_bukan_semantik_account_payment` membuktikan semantiknya juga
+ikut tergantikan: invoice tanpa satu pun `payment.transaction` tetap melaporkan
+`amount_paid == 100.0` (semantik modul ini), bukan `0.0` (semantik `account_payment`).
+
+**Dampak nyata yang sekarang pasti, bukan lagi hipotetis:** setiap fitur `account_payment` yang
+membaca `invoice.amount_paid` — portal pembayaran pelanggan, `_has_to_be_paid()`, tampilan
+"Amount paid" di portal — sekarang memakai angka `amount_total − amount_residual` alih-alih total
+transaksi pembayaran online yang authorized/done. Untuk invoice yang dibayar lewat transfer bank
+manual (tanpa transaksi online sama sekali), kedua angka itu berbeda jauh.
+
 **Rekomendasi:** ganti nama kedua field dan kedua method ke namespace modul sendiri (mis.
 `x_asa_amount_paid` / `_compute_asa_amount_paid`). Kalau memang niatnya memakai angka
 `account_payment`, jangan redefinisi — baca field core itu apa adanya.
@@ -106,11 +139,33 @@ ter-cover: `move_type` `entry` / `in_invoice` / `in_refund` / `out_receipt` / `i
 `payment_state == 'not_paid'` atau `'reversed'` / `'invoicing_legacy'`. Selain itu, di cabang
 `out_invoice` `amount_paid_cn` tidak pernah di-assign (dan sebaliknya) — padahal KEDUA field
 memakai method compute yang sama.
-**Dampak:** untuk field stored-compute, Odoo melempar error kalau method compute selesai tanpa
-menugaskan nilai. Kalau benar terjadi, ini memutus operasi akuntansi paling dasar (membuat jurnal
-umum / vendor bill / faktur yang belum dibayar) di SELURUH database — bukan hanya laporan
-penjualan. Perlu dibuktikan lewat eksekusi nyata di Step 04, bukan disimpulkan dari baca kode saja
-(perilaku bisa berbeda kalau `account_payment` yang menang di MRO — lihat F-01).
+**Dampak — DIKOREKSI setelah eksekusi nyata (Step 04, 2026-08-18):** dugaan awal Step 01 adalah
+Odoo akan melempar error "Compute method failed to assign". **Itu TIDAK terjadi.** Yang benar-benar
+terjadi:
+
+- Instalasi modul di database dengan demo data **berhasil bersih**, tanpa traceback.
+- Semua 24 `account.move` demo mendapat `amount_paid` dan `amount_paid_cn` bernilai **`NULL`** di
+  database — nol dari 24 yang ter-assign:
+
+  ```
+   move_type  | payment_state | n  | amount_paid_notnull | cn_notnull
+  -------------+---------------+----+---------------------+------------
+   entry       | not_paid      | 10 |                   0 |          0
+   in_invoice  | not_paid      |  3 |                   0 |          0
+   in_refund   | not_paid      |  2 |                   0 |          0
+   out_invoice | not_paid      |  4 |                   0 |          0
+   out_refund  | not_paid      |  5 |                   0 |          0
+  ```
+
+- Membuat jurnal umum baru (`move_type == 'entry'`) juga tidak error; kolomnya tersimpan `NULL` dan
+  dibaca `0.0` dari Python (test `test_ac_02_03_move_type_entry_tidak_assign`).
+
+Jadi ini **bukan** bug yang memutus operasi akuntansi seperti diduga semula. Yang tersisa tetap
+nyata tapi lebih halus: `amount_paid` menyimpan `NULL` alih-alih `0.0` untuk mayoritas record.
+`NULL` berperilaku berbeda dari `0.0` di agregasi SQL (`SUM`/`AVG` mengabaikan `NULL`, dan
+`NULL + x` menghasilkan `NULL`) — dan `sale.report` modul ini memang mengagregasi kolom-kolom
+turunannya lewat SQL langsung. Prioritas tetap Tinggi karena field ini juga yang menimpa definisi
+`account_payment` (F-01).
 **Rekomendasi:** set default `move.amount_paid = 0.0` dan `move.amount_paid_cn = 0.0` di awal tiap
 iterasi (pola yang sudah dipakai dengan benar di `_compute_amount_dp`, lihat BR-07).
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
@@ -118,7 +173,7 @@ iterasi (pola yang sudah dipakai dengan benar di `_compute_amount_dp`, lihat BR-
 ---
 
 ### F-03 — Dependency melingkar antar tiga stored compute di `sale.order.line`
-**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** ~~Tinggi~~ → **Rendah** (diturunkan setelah eksekusi)
 **Lokasi:** `advanced_sales_analysis/models/sale_report.py:101, 153-156, 202-205`
 **Ref:** BR-03, BR-04, BR-05, AC-06-05
 **Deskripsi:** Ketiga field stored-compute saling menyebut satu sama lain di `@api.depends`:
@@ -142,9 +197,21 @@ Perhatikan juga bahwa nilai `amount_to_invoice` memang secara matematis diturunk
 lain (BR-03: `price_subtotal − (waiting + received)`) — jadi arah dependency satu arah
 (`received`/`waiting` → `to_invoice`) mungkin memang yang diinginkan, dan arah baliknya yang
 berlebih.
+**Bukti eksekusi (Step 04, 2026-08-18) — dampak yang diduga TIDAK terbukti:** ketiga kemungkinan
+yang ditulis di Step 01 diuji dan tidak satu pun muncul:
+- Odoo **tidak** menolak/memperingatkan siklus saat setup registry — modul terinstall bersih.
+- Test `test_ac_06_05_urutan_pembacaan_field_melingkar` membaca ketiga field dalam DUA urutan
+  berbeda (dengan `invalidate_recordset()` di antaranya) dan mendapat hasil **identik** — tidak
+  ada order-dependency yang teramati.
+- 36 test lain tidak menunjukkan gejala rekomputasi berulang yang mencolok.
+
+Prioritas diturunkan ke **Rendah**. Ini tetap dicatat (bukan dihapus) karena `@api.depends`
+melingkar tetap kode yang menyesatkan pembaca dan menyimpan risiko kalau nanti salah satu compute
+diubah — tapi TIDAK boleh dilaporkan sebagai bug aktif berdasarkan bukti yang ada.
 **Rekomendasi:** buang `amount_to_invoice` dari `@api.depends` milik
 `_compute_waiting_for_payment_research` dan `_compute_amount_received_research`, serta buang
-referensi self-depends; sisakan hanya arah `received`/`waiting` → `to_invoice`.
+referensi self-depends; sisakan hanya arah `received`/`waiting` → `to_invoice`. Sifatnya
+kebersihan kode, bukan perbaikan bug.
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
 
 ---
@@ -257,7 +324,7 @@ tetap perlu di-override kalau F-06 diputuskan tetap dipertahankan.
 ---
 
 ### F-09 — `amount_residual` (dan `amount_dp_nopaid`) bocor dari iterasi terakhir loop
-**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** ~~Tinggi~~ → **Rendah** (diturunkan setelah eksekusi)
 **Lokasi:** `advanced_sales_analysis/models/sale_report.py:162, 168, 170, 195`
 **Ref:** BR-04, AC-05-05
 **Deskripsi:** Variabel `amount_residual` dan `amount_dp_nopaid` di-set ULANG (bukan diakumulasi)
@@ -274,11 +341,24 @@ baris faktur baris SO tersebut. Kalau tidak ada baris faktur yang lolos sama sek
 tetap `0.0` dari inisialisasi, sehingga guard langsung memaksa `waiting_for_payment = 0`.
 Bandingkan dengan `amount_dp_nopaid_dp` di baris yang sama yang memang diakumulasi dengan `+=`
 (`:169`) — inkonsistensi ini menguatkan dugaan `:168`/`:170` tidak disengaja.
-**Dampak:** untuk baris SO yang difakturkan lewat lebih dari satu faktur, `waiting_for_payment`
-bisa dipaksa jadi `0` walau masih ada tagihan terbuka — angka "menunggu pembayaran" jadi terlalu
-kecil. Perlu diverifikasi lewat skenario multi-faktur di Step 04.
+**Dampak — DIKOREKSI setelah eksekusi (Step 04, 2026-08-18):** dugaan Step 01 adalah
+`waiting_for_payment` bisa dipaksa jadi `0` walau masih ada tagihan terbuka. Test
+`test_ac_05_05_dua_faktur_untuk_satu_baris_so` (satu baris SO 2×100, faktur A lunas, faktur B
+belum dibayar) mendapat `waiting_for_payment == 100.0` dan `amount_received == 100.0` — **benar,
+bukan 0**.
+
+Alasan strukturalnya, yang terlewat saat Step 01: filter loop hanya meloloskan baris faktur
+ber-`payment_state` `not_paid`/`partial`, dan faktur semacam itu **selalu** punya
+`amount_residual != 0`. Jadi begitu ada satu saja baris faktur yang lolos, `amount_residual`
+pasca-loop pasti bukan nol dan guard tidak pernah aktif. Kalau tidak ada yang lolos sama sekali,
+`amount_residual` tetap `0.0` dari inisialisasi dan guard memaksa `waiting = 0` — yang memang
+hasil yang benar untuk kasus itu.
+
+Prioritas diturunkan ke **Rendah**: yang tersisa adalah kode yang menyesatkan (variabel dipakai di
+luar scope loop-nya, dan tidak konsisten dengan `amount_dp_nopaid_dp` tetangganya yang justru
+memakai `+=`), bukan bug dengan dampak terbukti.
 **Rekomendasi:** akumulasi `amount_residual` (mis. `total_residual += ...`) atau evaluasi guard di
-dalam loop, bukan di luar.
+dalam loop, bukan di luar — sebagai kebersihan kode.
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
 
 ---
@@ -346,6 +426,21 @@ padahal tidak.
   `string='amount dp'`; `amount_refund` dan `amount_refund_nopaid` keduanya `string='amount refund'`.
   Semuanya juga huruf kecil, tidak mengikuti konvensi Title Case Odoo.
 
+**Bukti eksekusi (Step 04, 2026-08-18):** Odoo sendiri sudah memperingatkan ini di log instalasi —
+13 baris `WARNING odoo.addons.base.models.ir_model: Two fields (...) have the same label`. Yang
+tidak terduga dari baca kode: peringatan itu **tidak hanya untuk `account.move`**, tapi ikut
+merembet ke `account.payment` dan `account.bank.statement.line` (kedua model itu mendelegasikan ke
+`account.move`), dengan atribusi `[Modules: None and None]`:
+
+```
+Two fields (amount_dp2, amount_dp) of account.move() have the same label: amount dp.
+Two fields (amount_dp2, amount_dp) of account.payment() have the same label: amount dp.
+Two fields (amount_dp2, amount_dp) of account.bank.statement.line() have the same label: amount dp.
+Two fields (amount_to_invoice, amount_received) of sale.order.line() have the same label: Amount Received.
+```
+
+Artinya kedelapan field `account.move` modul ini juga ikut muncul di UI `account.payment` dan
+`account.bank.statement.line` — permukaan yang lebih luas dari yang diduga di Step 01.
 **Dampak:** field-field ini muncul di UI (dropdown Measures pivot `account.move`, Add Custom Filter,
 export) dengan nama yang tidak bisa dibedakan satu sama lain — user tidak bisa tahu mana yang mana.
 **Rekomendasi:** beri label unik dan deskriptif, mis. `'Down Payment (Paid, Deducted)'`,
@@ -399,6 +494,51 @@ berkontribusi ke metrik mana pun, walau `amount_residual`-nya bukan nol.
 **Dampak:** kasus tepi; angka laporan kehilangan kontribusi faktur semacam itu tanpa jejak.
 **Rekomendasi:** putuskan apakah basis proporsi seharusnya `amount_total` (bukan `amount_untaxed`)
 untuk kasus ini, atau memang sengaja diabaikan — kalau sengaja, beri komentar di kode.
+**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+
+---
+
+### F-17 — `invoice_policy == 'delivery'` diabaikan: `price_subtotal` lokal jadi dead code
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi · **Ditemukan:** Step 04 (eksekusi), bukan
+Step 01 (baca kode)
+**Lokasi:** `advanced_sales_analysis/models/sale_report.py:118-121, 149`
+**Ref:** BR-03, AC-06-04
+**Deskripsi:** `_compute_amount_to_invoice` menghitung variabel lokal `price_subtotal` dengan
+susah payah — memilih `qty_delivered` vs `product_uom_qty` sesuai `invoice_policy`, lalu
+memanggil `tax_id.compute_all(...)` kalau ada pajak `price_include`:
+
+```python
+uom_qty_to_consider = line.qty_delivered if line.product_id.invoice_policy == 'delivery' else line.product_uom_qty
+price_reduce = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+price_subtotal = price_reduce * uom_qty_to_consider
+if len(line.tax_id.filtered(lambda tax: tax.price_include)) > 0:
+    price_subtotal = line.tax_id.compute_all(...)['total_excluded']
+```
+
+Tapi variabel itu **hanya dipakai di cabang `if`** (kasus "diskon baris faktur berbeda dari baris
+SO"). Cabang `else` — yang jalan untuk hampir semua kasus normal — memakai **FIELD**
+`line.price_subtotal`, bukan variabel lokalnya:
+
+```python
+amount_to_invoice = line.price_subtotal - (line.waiting_for_payment + line.amount_received)
+```
+
+Di core Odoo (`sale/models/sale_order_line.py:915`), cabang `else`-nya memakai variabel lokal itu
+(`price_subtotal - line.untaxed_amount_invoiced`). Perubahan modul ini ke `line.price_subtotal`
+menghapus seluruh penanganan `invoice_policy`/`price_include` di jalur utama tanpa disadari.
+**Bukti eksekusi:** produk ber-`invoice_policy == 'delivery'`, 10 dipesan @10, baru 4 dikirim.
+Nilai yang benar menurut logika yang dihitung method itu sendiri adalah `4 × 10 = 40`. Hasil
+sebenarnya: **`amount_to_invoice == 100.0`** (`test_ac_06_04_invoice_policy_delivery_diabaikan`).
+Ini yang membuat run pertama Step 04 gagal — assertion-nya kemudian diperbaiki untuk merekam
+perilaku nyata, sesuai prinsip BACKFILL.
+**Dampak:** untuk semua produk ber-`invoice_policy == 'delivery'` (barang fisik yang ditagih
+setelah pengiriman — sangat umum), kolom **Amount To Invoice** di Sales Analysis melaporkan
+seluruh nilai order sejak SO dikonfirmasi, bukan hanya bagian yang sudah bisa ditagih. Untuk
+produk ber-pajak `price_include`, subtotal yang dipakai juga sudah termasuk pajak alih-alih
+`total_excluded`. Keduanya membuat metrik utama modul ini overstated.
+**Rekomendasi:** pakai variabel lokal `price_subtotal` di cabang `else` (konsisten dengan core dan
+dengan cabang `if` di method yang sama):
+`amount_to_invoice = price_subtotal - (line.waiting_for_payment + line.amount_received)`.
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
 
 ---
