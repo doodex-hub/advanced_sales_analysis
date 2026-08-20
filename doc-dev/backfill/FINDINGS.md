@@ -38,6 +38,7 @@ Step 04.
 | F-14 | File verifikasi Google ikut di dalam addon | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
 | F-16 | Faktur ber-`amount_untaxed == 0` selalu berkontribusi 0 | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
 | F-18 | Tidak ada bundle `assets` — modul tidak bisa menampung Tour test | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
+| F-19 | `_select_sale()` override gagal di Odoo 17 patch tertentu — UNION column mismatch | `[PERLU-KEPUTUSAN]` | **Tinggi** | production | Terbuka |
 
 **Dua koreksi jujur dari Step 04:** F-03 dan F-09 ditulis di Step 01 dengan prioritas Tinggi
 berdasarkan pembacaan kode. Eksekusi nyata TIDAK membuktikan dampak yang diduga — keduanya
@@ -564,6 +565,48 @@ menyentuh manifest (lihat `test/07_QA_TESTING.md` §2).
 },
 ```
 Bundle `web.assets_tests` hanya dimuat dalam mode test — tidak menambah beban asset di produksi.
+**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+
+---
+
+### F-19 — `_select_sale()` override gagal di Odoo 17 patch tertentu — UNION column mismatch
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi
+**Lokasi:** `advanced_sales_analysis/models/sale_report.py:19-26`
+**Ref:** F-08, BR-01
+**Ditemukan:** post-backfill, saat deploy ke production `demo17.doodex.net` (2026-08-20)
+**Deskripsi:** Pada Odoo 17 patch tertentu (termasuk instalasi production Doodex), `sale.report._query()`
+mengandung UNION ALL dua SELECT: SELECT pertama untuk baris SO biasa (dibangun lewat `_select_sale()`),
+SELECT kedua untuk baris section/separator tanpa produk (hardcoded, dimulai dengan `-MIN(l.id) AS id`).
+Modul meng-override `_select_sale()` dan menambahkan 3 kolom baru hanya ke SELECT pertama. SELECT kedua
+tidak diperbarui → UNION dua cabang punya jumlah kolom berbeda → PostgreSQL error saat view di-query:
+
+```
+psycopg2.errors.SyntaxError: each UNION query must have the same number of columns
+LINE 113:             -MIN(l.id) AS id,
+```
+
+Error ini muncul setiap kali user membuka **Sales → Reporting → Sales** (pivot Sales Analysis) —
+laporan tidak bisa dibuka sama sekali.
+
+**Kenapa tidak tertangkap di backfill:** Docker image `odoo:17.0` yang dipakai testing (2026-08-18)
+menggunakan patch yang berbeda dari instalasi production. Pada versi Docker, UNION ALL di `_query()`
+tidak ada atau strukturnya kompatibel — semua 37 test lulus. Pada production, UNION sudah ada dan
+menyebabkan mismatch. Ini pola version drift yang berulang saat addon dikembangkan di image publik
+tapi di-deploy ke instalasi yang sudah di-patch lebih lanjut.
+
+**Relasi ke F-08:** F-08 sudah mencatat bahwa hook resmi `_select_additional_fields()` tidak dipakai.
+Jika modul memakai `_select_additional_fields()` sejak awal, Odoo secara otomatis akan memasukkan
+field baru ke SELECT yang relevan (termasuk menangani kasus UNION dengan benar sesuai implementasi
+core). Override `_select_sale()` dengan string concatenation melewati mekanisme ini.
+
+**Dampak:** laporan Sales Analysis tidak bisa dibuka di production — feature utama modul ini tidak
+berfungsi. Ini blocker deployment.
+
+**Rekomendasi:** pindahkan ketiga kolom ke `_select_additional_fields()` (sesuai rekomendasi F-08),
+ATAU override `_query()` secara penuh dan tambahkan `0 AS amount_received, 0 AS waiting_for_payment,
+0 AS amount_to_invoice` ke SELECT kedua UNION. Solusi `_select_additional_fields()` lebih tahan patch
+karena mengikuti API resmi core.
+
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
 
 ---
