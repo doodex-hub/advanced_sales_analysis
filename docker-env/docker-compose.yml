@@ -37,7 +37,7 @@ services:
       - ./logs:/var/log/odoo
     command: >
       odoo -d advanced_sales_analysis_test
-      -u advanced_sales_analysis
+      -i advanced_sales_analysis
       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
       --test-enable
       --test-tags=/advanced_sales_analysis

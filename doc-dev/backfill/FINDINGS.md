@@ -8,8 +8,8 @@
 > **Dokumen hidup:** kalau pemilik modul memperbaiki kode berdasarkan finding di sini, entry-nya
 > ditandai `✅ RESOLVED` + tanggal + bukti test, BUKAN dihapus.
 
-**Modul:** `advanced_sales_analysis` · **Odoo:** 17.0 · **Branch:** `backfill/17.0`
-**Terakhir diperbarui:** 2026-08-18 (Step 04 — diverifikasi lewat eksekusi nyata, 36 test)
+**Modul:** `advanced_sales_analysis` · **Odoo:** 17.0 · **Branch:** `staging/17.0`
+**Terakhir diperbarui:** 2026-08-21 (backfill ulang — fix F-19 diterapkan, 38 test)
 
 ---
 
@@ -25,20 +25,20 @@ Step 04.
 | F-17 | `invoice_policy == 'delivery'` diabaikan — `price_subtotal` lokal dead code | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
 | F-04 | Deteksi uang muka lewat nama produk hardcoded `"Down payment"` | `[PERLU-KEPUTUSAN]` | **Tinggi** | eksekusi | Terbuka |
 | F-05 | Kolom baru `sale.report` tidak dikonversi mata uang | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
-| F-06 | Kolom baru masuk GROUP BY sekaligus di-SUM | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
+| F-06 | Kolom baru masuk GROUP BY sekaligus di-SUM | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | ✅ RESOLVED 2026-08-21 — fix F-19 menghapus `_group_by_sale()` |
 | F-07 | `ir.model.access.csv` menganggur + merujuk model tak ada | `[PERLU-KEPUTUSAN]` | Sedang | baca-kode | Terbuka |
 | F-10 | Baris DP ganda: hanya baris terakhir yang menang | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
 | F-11 | `payment_state == 'partial'` diperlakukan tidak konsisten | `[PERLU-KEPUTUSAN]` | Sedang | eksekusi | Terbuka |
 | F-15 | `search()` di dalam loop bersarang | `[PERLU-KEPUTUSAN]` | Sedang | baca-kode | Terbuka |
 | F-03 | Dependency melingkar antar 3 stored compute `sale.order.line` | `[PERLU-KEPUTUSAN]` | ~~Tinggi~~ → **Rendah** | eksekusi | Terbuka — dampak TIDAK terbukti |
 | F-09 | `amount_residual` bocor dari iterasi terakhir loop | `[PERLU-KEPUTUSAN]` | ~~Tinggi~~ → **Rendah** | eksekusi | Terbuka — dampak TIDAK terbukti |
-| F-08 | Hook resmi `_select_additional_fields()` tidak dipakai | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
+| F-08 | Hook resmi `_select_additional_fields()` tidak dipakai | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | ✅ RESOLVED 2026-08-21 — hook resmi dipakai sebagai fix F-19 |
 | F-12 | `controllers/controllers.py` kosong tapi di-import | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
 | F-13 | Label field salah/duplikat | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
 | F-14 | File verifikasi Google ikut di dalam addon | `[PERLU-KEPUTUSAN]` | Rendah | baca-kode | Terbuka |
 | F-16 | Faktur ber-`amount_untaxed == 0` selalu berkontribusi 0 | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
 | F-18 | Tidak ada bundle `assets` — modul tidak bisa menampung Tour test | `[PERLU-KEPUTUSAN]` | Rendah | eksekusi | Terbuka |
-| F-19 | `_select_sale()` override gagal di Odoo 17 patch tertentu — UNION column mismatch | `[PERLU-KEPUTUSAN]` | **Tinggi** | production | Terbuka |
+| F-19 | `_select_sale()` override gagal di Odoo 17 patch tertentu — UNION column mismatch | `[PERLU-KEPUTUSAN]` | **Tinggi** | production | ✅ RESOLVED 2026-08-21 — pindah ke `_select_additional_fields()` |
 
 **Dua koreksi jujur dari Step 04:** F-03 dan F-09 ditulis di Step 01 dengan prioritas Tinggi
 berdasarkan pembacaan kode. Eksekusi nyata TIDAK membuktikan dampak yang diduga — keduanya
@@ -263,7 +263,7 @@ jadi yang hilang persis satu lapis konversi terakhir order → perusahaan.
 ---
 
 ### F-06 — Kolom baru masuk GROUP BY sekaligus dibungkus `SUM()`
-**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Sedang
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Sedang · **Status: ✅ RESOLVED 2026-08-21**
 **Lokasi:** `advanced_sales_analysis/models/sale_report.py:14-17` (GROUP BY) vs `:20-26` (SELECT)
 **Ref:** BR-01, BR-02, AC-07-03
 **Deskripsi:** `_group_by_sale()` menambahkan `l.amount_received, l.waiting_for_payment,
@@ -282,7 +282,11 @@ juga kolom-kolom core (`nbr`, `product_uom_qty`, dst) yang ikut terpecah. Perlu 
 data uji di Step 04/07.
 **Rekomendasi:** hapus ketiga kolom dari `_group_by_sale()` dan biarkan `SUM()` di SELECT bekerja
 sebagaimana mestinya; grain laporan kembali identik dengan core.
-**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+**Resolusi (2026-08-21):** Fix F-19 menghapus total override `_select_sale()` dan `_group_by_sale()`,
+diganti `_select_additional_fields()`. Hook ini hanya mengisi dict SELECT — tidak menyentuh GROUP BY
+sama sekali. Efek samping positif: granularitas laporan kembali identik dengan core. Diverifikasi
+lewat `test_ac_07_03_group_by_tidak_lagi_memecah_baris` (sekarang assert 1 baris, bukan 2).
+**Keputusan pemilik modul:** *(diputuskan implisit lewat fix F-19)*
 
 ---
 
@@ -308,7 +312,7 @@ baris komentarnya dari manifest.
 ---
 
 ### F-08 — Hook resmi `_select_additional_fields()` tidak dipakai
-**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Rendah
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Rendah · **Status: ✅ RESOLVED 2026-08-21**
 **Lokasi:** `advanced_sales_analysis/models/sale_report.py:19-26`
 **Ref:** BR-01
 **Deskripsi:** Core `sale.report` (17.0) menyediakan hook `_select_additional_fields()` yang
@@ -321,7 +325,9 @@ mudah bentrok kalau modul lain melakukan hal yang sama. Bukan bug — pilihan ga
 dari API yang disediakan.
 **Rekomendasi:** pindahkan ketiga kolom ke `_select_additional_fields()`. Catatan: `_group_by_sale`
 tetap perlu di-override kalau F-06 diputuskan tetap dipertahankan.
-**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+**Resolusi (2026-08-21):** Fix F-19 memindahkan ketiga kolom ke `_select_additional_fields()`.
+`_select_sale()` dan `_group_by_sale()` keduanya dihapus total dari modul ini.
+**Keputusan pemilik modul:** *(diputuskan lewat fix F-19)*
 
 ---
 
@@ -570,7 +576,7 @@ Bundle `web.assets_tests` hanya dimuat dalam mode test — tidak menambah beban 
 ---
 
 ### F-19 — `_select_sale()` override gagal di Odoo 17 patch tertentu — UNION column mismatch
-**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi
+**Tag:** `[PERLU-KEPUTUSAN]` · **Prioritas:** Tinggi · **Status: ✅ RESOLVED 2026-08-21**
 **Lokasi:** `advanced_sales_analysis/models/sale_report.py:19-26`
 **Ref:** F-08, BR-01
 **Ditemukan:** post-backfill, saat deploy ke production `demo17.doodex.net` (2026-08-20)
@@ -607,7 +613,13 @@ ATAU override `_query()` secara penuh dan tambahkan `0 AS amount_received, 0 AS 
 0 AS amount_to_invoice` ke SELECT kedua UNION. Solusi `_select_additional_fields()` lebih tahan patch
 karena mengikuti API resmi core.
 
-**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+**Resolusi (2026-08-21):** `_select_sale()` dan `_group_by_sale()` dihapus total. Ketiga kolom
+dipindah ke `_select_additional_fields()` (`models/sale_report.py:13-18`). Hook ini dipakai ulang
+otomatis oleh `_select_pos()` milik `point_of_sale`, sehingga UNION kedua cabang selalu sinkron.
+Dikonfirmasi lewat:
+- Tes manual UI di `fsdemo17` (2026-08-21, screenshot dari user) — laporan terbuka normal.
+- Regression test otomatis `test_f19_union_kompatibel_dengan_point_of_sale` (baru ditambahkan).
+**Keputusan pemilik modul:** *(fix diterapkan langsung oleh pemilik modul)*
 
 ---
 

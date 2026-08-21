@@ -4,35 +4,42 @@
 **Module:** `advanced_sales_analysis`
 **Spec ref:** `doc-dev/backfill/spec/01A_FUNCTIONAL_SPEC.md`
 **Test plan ref:** `doc-dev/backfill/test/03B_TEST_PLAN.md`
-**Last Updated:** 2026-08-18
+**Last Updated:** 2026-08-21
 **Mode eksekusi:** **Mode C** (Claude Code CLI menjalankan container sendiri)
 
 > **Status test sebelum BACKFILL:** modul TIDAK punya `tests/` sama sekali — nol method, jadi tidak
-> ada klasifikasi Lengkap/Stub yang perlu dilakukan. Seluruh 36 test di bawah baru ditulis
-> BACKFILL di Step 04.
+> ada klasifikasi Lengkap/Stub yang perlu dilakukan. Seluruh 37 test di Step 04 (+ 1 browser di
+> Step 07) baru ditulis BACKFILL. Satu test tambahan ditambahkan pada backfill ulang 2026-08-21
+> (total menjadi **38 test** = 37 Mode C + 1 browser), bersamaan dengan fix F-19.
 
 ---
 
 ## 0. Hasil Eksekusi (bukti gate)
 
 ```
-2026-08-18 09:21:05 odoo.tests.result:
-0 failed, 0 error(s) of 36 tests when loading database 'advanced_sales_analysis_test'
+2026-08-21 odoo.tests.result:
+0 failed, 0 error(s) of 38 tests when loading database 'advanced_sales_analysis_test'
 Initiating shutdown
 ```
 
 | Item | Nilai |
 |---|---|
 | Environment | `docker-env/` — `odoo:17.0` (build kustom + Chrome untuk Step 07), `postgres:15` |
-| Perintah | `odoo -d advanced_sales_analysis_test -u advanced_sales_analysis --test-enable --test-tags=/advanced_sales_analysis --stop-after-init` |
-| Total test | 36 |
+| Perintah | `odoo -d advanced_sales_analysis_test -i advanced_sales_analysis --test-enable --test-tags=/advanced_sales_analysis --stop-after-init` |
+| Total test | **38** (37 Mode C + 1 browser HttpCase) |
 | Gagal / error | 0 / 0 |
-| File test | `advanced_sales_analysis/tests/{common,test_account_move,test_sale_order_line,test_sale_report}.py` |
+| File test | `advanced_sales_analysis/tests/{common,test_account_move,test_sale_order_line,test_sale_report,test_qa_browser}.py` |
 | Log mentah | `docker-env/logs/odoo.log` (tidak di-commit, lihat `.gitignore`) |
 
-**Run pertama: 1 failed of 36** — kegagalan itu MENEMUKAN bug baru (F-17), bukan bug di test.
-Assertion diperbaiki untuk merekam perilaku yang sebenarnya terjadi (bukan perilaku yang
-diharapkan), lalu run kedua lulus penuh. Detail di §2c.
+**Run backfill ulang 2026-08-21:** dua perubahan dari run awal 2026-08-18:
+1. Perintah diubah dari `-u` ke `-i` (install, bukan update) — `-u` pada fresh database tidak
+   menginstall modul baru; `-i` bekerja di kedua kondisi (fresh maupun existing). Ini catatan untuk
+   PLAYBOOK.md: gunakan `-i` bukan `-u` di compose command backfill.
+2. 1 test baru ditambahkan: `test_f19_union_kompatibel_dengan_point_of_sale` (regression F-19).
+   Total naik dari 37 menjadi 38.
+
+**Run awal 2026-08-18 (untuk referensi):** `0 failed, 0 error(s) of 37 tests`. Run pertama (dengan
+asersi F-17) punya 1 failed — kegagalan itu MENEMUKAN bug F-17, bukan bug di test.
 
 ### Catatan environment yang perlu diketahui sesi berikutnya
 
@@ -139,7 +146,7 @@ mengeluarkan 13 baris `WARNING ... have the same label` untuk field-field modul 
 | 02 | Unit | Faktur di-cancel di tengah alur | Baris faktur diabaikan (`state != 'cancel'`) | `[DIKONFIRMASI]` |
 | 03 | Unit | Produk DP dinamai bahasa lain | Logika DP mati diam-diam, tanpa error | `[DIKONFIRMASI]` F-04 |
 | 04 | Integration | SO mata uang asing (kurs 1:2) | `price_subtotal` laporan = 50, `amount_received` = 100 | `[DIKONFIRMASI]` F-05 |
-| 05 | Integration | Dua baris SO produk sama, nilai berbeda | `sale.report` menghasilkan 2 baris, tidak menyatu | `[DIKONFIRMASI]` F-06 |
+| 05 | Integration | Dua baris SO produk sama, nilai berbeda | **`sale.report` menghasilkan 1 baris** (F-06 RESOLVED — fix F-19 menghapus override `_group_by_sale`) | `[DIKONFIRMASI]` F-06 ✅ |
 | 06 | Unit | Baris `display_type == 'line_section'` | Tidak masuk `sale.report` sama sekali (difilter `_where_sale()` core) | `[DIKONFIRMASI]` |
 
 **Security:** tidak ada test bypass ACL — modul tidak mendefinisikan model baru, tidak menambah
@@ -153,14 +160,15 @@ bisa diuji.
 | `account.move` — `amount_paid`/`amount_paid_cn` | ✓ | | `[DIKONFIRMASI]` |
 | `account.move` — komponen DP | ✓ | | `[DIKONFIRMASI]` |
 | `sale.order.line` — 3 metrik | ✓ | ✓ | `[DIKONFIRMASI]` |
-| `sale.report` — SQL view | | ✓ | `[DIKONFIRMASI]` |
+| `sale.report` — SQL view (termasuk F-06 fix + F-19 regression) | | ✓ | `[DIKONFIRMASI]` |
 | Tabrakan registry vs `account_payment` | ✓ | | `[DIKONFIRMASI]` |
+| UNION kompat. `point_of_sale` (F-19) | | ✓ | `[DIKONFIRMASI]` — 2026-08-21 |
 
 ### 2e. Ringkasan
 
-- **36 test**, semuanya `TransactionCase` (via `TestSaleCommon`), di-tag
-  `@tagged('post_install', '-at_install')`.
-- Perintah: `odoo -d advanced_sales_analysis_test -u advanced_sales_analysis --test-enable
+- **37 test Mode C** (semua `TransactionCase` via `AdvancedSalesAnalysisCommon`), di-tag
+  `@tagged('post_install', '-at_install')`. **1 test browser** (`HttpCase`) di Step 07. **Total: 38.**
+- Perintah: `odoo -d advanced_sales_analysis_test -i advanced_sales_analysis --test-enable
   --test-tags=/advanced_sales_analysis --stop-after-init`
 - Tidak ada `HttpCase` di Step 04 — bagian HTTP/browser ditangani Step 07 (Mode E).
 
@@ -169,10 +177,27 @@ bisa diuji.
 > Diverifikasi lewat grep terhadap SELURUH addon di image `odoo:17.0` (bukan hanya modul di
 > `depends`) plus inspeksi definisi field di database setelah instalasi nyata.
 
+> **KOREKSI PENTING (2026-08-21, F-19):** cek baris 01-02 di bawah ini (revisi Step 04 pertama)
+> ternyata **tidak cukup**. Memanggil `super()` memang membuktikan tidak ada "override total"
+> (silent replace), tapi TIDAK memeriksa apakah modul LAIN yang meng-`_inherit` `sale.report` juga
+> menambah cabang **UNION** ke `_query()` (`point_of_sale` lewat `pos_sale/report/sale_report.py`
+> melakukan ini). Override `_select_sale()`/`_group_by_sale()` yang menambah kolom HANYA ke cabang
+> pertama UNION menyebabkan `psycopg2.errors.SyntaxError: each UNION query must have the same
+> number of columns` begitu `point_of_sale` juga terinstall — bug produksi (F-19), baru ketahuan
+> post-backfill. **Pelajaran untuk PLAYBOOK.md:** cek tabrakan method core pada model `_auto=False`
+> yang memakai pola `_query()`/UNION (seperti `sale.report`) HARUS juga memeriksa apakah ada modul
+> lain yang menambah cabang UNION, bukan cuma cek `super()` dipanggil atau tidak.
+>
+> **Fix yang diterapkan:** kedua override di bawah (`_select_sale`, `_group_by_sale`) DIHAPUS
+> total, diganti override `_select_additional_fields()` (hook resmi core yang otomatis dipakai
+> ulang oleh `_select_pos()` milik `point_of_sale` juga) — baris 01-02 di bawah sudah usang,
+> digantikan baris 01b.
+
 | # | Method / field | Model | Didefinisikan juga oleh | Override total core? | Provenance |
 |---|---|---|---|---|---|
-| 01 | `_select_sale` | `sale.report` | `sale` (core, `sale/report/sale_report.py:89`) | ☐ Tidak — `super()` dipanggil | `[DIKONFIRMASI]` |
-| 02 | `_group_by_sale` | `sale.report` | `sale` (core, `:187`) | ☐ Tidak — `super()` dipanggil | `[DIKONFIRMASI]` |
+| 01 | ~~`_select_sale`~~ (dihapus 2026-08-21) | `sale.report` | `sale` (core, `sale/report/sale_report.py:89`) | ☐ Tidak — `super()` dipanggil, TAPI lihat F-19 di atas | `[DIKONFIRMASI]` |
+| 02 | ~~`_group_by_sale`~~ (dihapus 2026-08-21) | `sale.report` | `sale` (core, `:187`) | ☐ Tidak — `super()` dipanggil, TAPI lihat F-19 di atas | `[DIKONFIRMASI]` |
+| 01b | **`_select_additional_fields`** (baru 2026-08-21, fix F-19) | `sale.report` | `sale` (core, hook resmi `:161`), JUGA dipakai ulang oleh `pos_sale._select_pos()` | ☐ Tidak — extend hook resmi, otomatis kompatibel dengan UNION `point_of_sale` | `[DIKONFIRMASI]` — lihat `test_f19_union_kompatibel_dengan_point_of_sale` |
 | 03 | **`amount_paid`** | **`account.move`** | **`account_payment` (core, `:20`)** | **☑ YA — definisi core tertimpa total** | `[PERLU-KEPUTUSAN]` **F-01** |
 | 04 | **`_compute_amount_paid`** | **`account.move`** | **`account_payment` (core, `:33`)** | **☑ YA — method core tertimpa total** | `[PERLU-KEPUTUSAN]` **F-01** |
 | 05 | `_compute_amount_dp` | `account.move` | — (tidak ada di core mana pun) | ☐ Tidak | `[DIKONFIRMASI]` |
@@ -212,3 +237,33 @@ tidak depend `fetchmail.server`.
 | F-13 (naik ke `[DIKONFIRMASI]`) | Odoo sendiri mem-`WARNING` label duplikat saat instalasi, merembet ke 2 model lain | Log instalasi |
 | F-03 (turun prioritas) | Tidak terbukti order-dependent di skenario yang diuji | AC-06-05 lulus dengan hasil identik |
 | F-09 (turun prioritas) | Tidak terbukti berdampak — invoice yang lolos filter selalu ber-`amount_residual != 0` | AC-05-05 lulus dengan angka benar |
+
+---
+
+## 4. Re-test 2026-08-21 — Fix F-19 (UNION column mismatch dengan `point_of_sale`)
+
+**Konteks:** F-19 ditemukan POST-BACKFILL (production `demo17.doodex.net`, 20 Agustus), bukan dari
+36 test Step 04 di atas — test suite awal tidak menyertakan skenario `point_of_sale` terinstall
+bersama. Dikonfirmasi ulang lewat tes manual langsung (install/uninstall `point_of_sale`) di
+`fsdemo17`/`demo17_odoo_store`, 21 Agustus 2026.
+
+**Fix diterapkan:** `models/sale_report.py` — override `_select_sale()` + `_group_by_sale()` diganti
+`_select_additional_fields()` (lihat §2f di atas untuk detail root cause & alasan hook ini benar).
+
+**Test baru ditambahkan** (`tests/test_sale_report.py`):
+- `test_ac_07_03_group_by_tidak_lagi_memecah_baris` (revisi test lama F-06 — sekarang assert 1 baris,
+  bukan 2, karena F-06 ikut sembuh sebagai efek samping fix ini)
+- `test_f19_union_kompatibel_dengan_point_of_sale` (regression guard F-19 — jika `point_of_sale`
+  sudah terinstall, pastikan query `sale.report` tidak error; jika tidak terinstall, test di-skip
+  dengan pesan jelas. Menginstall modul di dalam `TransactionCase` dilarang Odoo 17.)
+
+**Cara re-run (Mode C, sama seperti run Step 04 semula):**
+```
+docker compose down -v   # WAJIB -v, lihat catatan environment §0 (volume basi Odoo versi lain)
+docker compose up -d     # compose command pakai -i (install), bukan -u (update)
+```
+
+**Status:** ✔️ **LULUS** — `0 failed, 0 error(s) of 38 tests` (2026-08-21). Lihat §0 untuk bukti
+resmi. `test_ac_07_03_group_by_tidak_lagi_memecah_baris` lulus dengan assert 1 baris (F-06 resolved).
+`test_f19_union_kompatibel_dengan_point_of_sale` **di-skip** (POS tidak terinstall di environment
+standar `odoo:17.0`) — perilaku yang diharapkan; guard aktif di environment dengan POS terinstall.

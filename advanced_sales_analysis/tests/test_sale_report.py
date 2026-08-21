@@ -74,11 +74,13 @@ class TestAsaSaleReport(AdvancedSalesAnalysisCommon):
             "baris section ternyata ikut masuk sale.report — perbarui dokumentasi AC-07-02",
         )
 
-    def test_ac_07_03_group_by_tambahan_memecah_baris(self):
-        """F-06: tiga kolom baru ikut GROUP BY -> dua baris identik bisa TIDAK menyatu.
-
-        Dua baris SO dengan produk SAMA, diskon SAMA, tapi nilai berbeda sehingga
-        `amount_received`/`waiting_for_payment`/`amount_to_invoice`-nya berbeda.
+    def test_ac_07_03_group_by_tidak_lagi_memecah_baris(self):
+        """F-06 — DIPERBAIKI 2026-08-21 (F-19 fix): 3 kolom baru dipindah dari override manual
+        `_select_sale()`/`_group_by_sale()` ke hook resmi `_select_additional_fields()`. Efek
+        samping: kolom baru TIDAK LAGI ikut masuk GROUP BY, jadi granularitas laporan kembali sama
+        dengan core (dua baris SO produk sama menyatu jadi satu baris laporan, seperti sebelum
+        modul ini ada). Sebelum fix, test ini mengharapkan 2 baris (bug F-06); sekarang 1 baris
+        adalah perilaku yang BENAR.
         """
         order = self._make_so(lines=[
             (self.asa_product, 1.0, 60.0),
@@ -86,10 +88,54 @@ class TestAsaSaleReport(AdvancedSalesAnalysisCommon):
         ])
         rows = self._report_rows(order)
         self.assertEqual(
-            len(rows), 2,
-            "kedua baris menyatu jadi satu row — kalau begitu F-06 tidak berdampak seperti dugaan, "
-            "perbarui FINDINGS.md",
+            len(rows), 1,
+            "F-06 REGRESI — kedua baris terpecah lagi jadi 2 row, granularitas core berubah lagi. "
+            "Cek apakah _select_additional_fields() masih dipakai (jangan kembali ke override "
+            "_group_by_sale() manual).",
         )
+
+    def test_f19_union_kompatibel_dengan_point_of_sale(self):
+        """F-19 — REGRESI TEST untuk bug UNION column mismatch yang ditemukan post-backfill
+        (production demo17.doodex.net 2026-08-20, dikonfirmasi ulang di fsdemo17/demo17_odoo_store
+        2026-08-21 lewat tes langsung install/uninstall `point_of_sale`).
+
+        Root cause: `point_of_sale` (via `pos_sale/report/sale_report.py`) meng-override `_query()`
+        `sale.report` dan menambah `UNION ALL` cabang kedua lewat `_select_pos()` — yang JUGA
+        memanggil `_select_additional_fields()` (mengisi field tak dikenal dengan `NULL`). Modul
+        ini SEBELUMNYA menambah 3 kolom lewat override manual `_select_sale()` yang HANYA masuk ke
+        cabang pertama UNION -> jumlah kolom dua cabang UNION berbeda -> psycopg2.errors.SyntaxError
+        "each UNION query must have the same number of columns" setiap kali laporan Sales Analysis
+        dibuka, KHUSUS ketika `point_of_sale` juga terinstall di database yang sama.
+
+        Fix: pindahkan 3 kolom ke `_select_additional_fields()` (lihat models/sale_report.py) —
+        hook ini otomatis ikut dipakai `_select_pos()` juga, jadi kedua cabang UNION selalu punya
+        jumlah kolom yang sama, dengan atau tanpa `point_of_sale`.
+
+        CATATAN ENVIRONMENT: test ini hanya berjalan jika `point_of_sale` sudah terinstall di
+        database. Menginstall modul di dalam TransactionCase dilarang Odoo 17. Di environment
+        backfill standar (`odoo:17.0` tanpa POS), test ini di-skip — itu perilaku yang diharapkan.
+        Untuk verifikasi penuh F-19, jalankan di database dengan POS terinstall (mis. fsdemo17).
+        """
+        pos_module = self.env['ir.module.module'].search([('name', '=', 'point_of_sale')], limit=1)
+        if not pos_module or pos_module.state != 'installed':
+            self.skipTest(
+                "point_of_sale tidak terinstall di environment ini — F-19 regression guard "
+                "di-skip. Jalankan di database dengan POS terinstall untuk verifikasi penuh."
+            )
+
+        order = self._make_so()
+        self._invoice_so(order)
+        order.order_line.invalidate_recordset()
+
+        try:
+            rows = self._report_rows(order)
+        except Exception as exc:  # noqa: BLE001 - sengaja tangkap semua, ini regression guard
+            self.fail(
+                "F-19 REGRESI — query sale.report gagal dengan point_of_sale terinstall "
+                f"(kemungkinan UNION column mismatch lagi): {exc}"
+            )
+
+        self.assertTrue(rows, "tidak ada baris sale.report untuk order ini dengan point_of_sale terinstall")
 
     def test_ac_07_04_kolom_baru_tidak_dikonversi_mata_uang(self):
         """F-05: kolom core dikonversi ke mata uang perusahaan, kolom baru tidak.

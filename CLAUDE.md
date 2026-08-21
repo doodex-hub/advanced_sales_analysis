@@ -85,11 +85,16 @@ Tidak ada step 06/08/09 — di luar scope BACKFILL.
 
 ## Status saat ini
 
-**Backfill SELESAI sampai Step 07** (sesi kontinu CLI 01→07, 2026-08-18, satu sesi).
-`0 failed, 0 error(s) of 37 tests`. 18 finding tercatat di `doc-dev/backfill/FINDINGS.md`, 4 di
-antaranya prioritas Tinggi. Tidak ada sign-off — keputusan atas findings ada di pemilik modul.
+**Backfill SELESAI sampai Step 07** — dua sesi:
+1. **Backfill awal** (2026-08-18, satu sesi kontinu CLI 01→07): `0 failed, 0 error(s) of 37 tests`.
+2. **Backfill ulang** (2026-08-21, branch `staging/17.0`): fix F-19 terintegrasi ke `models/`,
+   test suite diperbarui, seluruh dokumen diperbarui. `0 failed, 0 error(s) of 38 tests`
+   (1 test F-19 di-skip karena POS tidak terinstall di `odoo:17.0` — perilaku yang diharapkan).
 
-Yang belum dilakukan (sengaja, bukan terlewat): `git push`. Branch `backfill/17.0` ada di lokal
+18 finding tercatat di `doc-dev/backfill/FINDINGS.md` — 3 di antaranya (F-06, F-08, F-19)
+RESOLVED bersamaan dengan backfill ulang; 15 sisanya terbuka (keputusan ada di pemilik modul).
+
+Yang belum dilakukan (sengaja, bukan terlewat): `git push`. Branch `staging/17.0` ada di lokal
 saja — command push diserahkan ke dev.
 
 ### Status per Step
@@ -98,7 +103,7 @@ saja — command push diserahkan ke dev.
 |---|---|---|---|
 | 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | ✅ Selesai ditulis | — |
 | 03B | `03B_TEST_PLAN.md` | ✅ Selesai ditulis | — |
-| 04 | `04A_DEV_TESTING.md`, `advanced_sales_analysis/tests/*.py` | ✅ Selesai ditulis | ✔️ Lulus — 36 test dijalankan nyata |
-| 07 | `07_QA_TESTING.md` | ✅ Selesai ditulis | ✔️ Lulus — 9 skenario + Chrome headless, findings + `records/` sudah ditulis |
+| 04 | `04A_DEV_TESTING.md`, `advanced_sales_analysis/tests/*.py` | ✅ Selesai ditulis | ✔️ Lulus — 38 test dijalankan nyata (37 ran + 1 skip) |
+| 07 | `07_QA_TESTING.md` | ✅ Selesai ditulis | ✔️ Lulus — 10 skenario (S-01..S-10) + Chrome headless |
 
 Legenda: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai ditulis · ✔️ Lulus gate.

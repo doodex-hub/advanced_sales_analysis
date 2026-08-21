@@ -3,7 +3,7 @@
 **Module:** `advanced_sales_analysis`
 **Odoo Version:** 17.0
 **Depends:** `base`, `sale`, `account`, `sale_management`
-**Last Updated:** 2026-08-18
+**Last Updated:** 2026-08-21 (backfill ulang — fix F-19 terintegrasi)
 **Status:** Backfill retroaktif — dibaca dari kode existing, bukan requirement baru
 **Provenance:** lihat `doc-dev-backfill/templates/CLAUDE_TEMPLATE.md` §Provenance Tag
 
@@ -27,12 +27,12 @@
    `[PERLU-KEPUTUSAN]` → F-03
 4. **Deteksi baris uang muka lewat nama produk hardcoded `"Down payment"`** — pecah di database
    berbahasa non-Inggris atau kalau produk DP dinamai lain. `[PERLU-KEPUTUSAN]` → F-04
-5. **Kolom baru di `sale.report` TIDAK dikonversi mata uang**, padahal semua kolom moneter core di
-   `_select_sale()` dibagi `s.currency_rate` dan dikali `currency_table.rate`.
+5. **Kolom baru di `sale.report` TIDAK dikonversi mata uang**, padahal semua kolom moneter core
+   dibagi `s.currency_rate` dan dikali `currency_table.rate`.
    `[PERLU-KEPUTUSAN]` → F-05
-6. **`_group_by_sale()` menambah 3 kolom ke GROUP BY sekaligus me-`SUM()`-nya di SELECT** — mengubah
-   granularitas baris laporan, dan `SUM()` atas kolom yang di-GROUP BY tidak menjumlah apa-apa.
-   `[PERLU-KEPUTUSAN]` → F-06
+6. ~~**`_group_by_sale()` menambah 3 kolom ke GROUP BY** — mengubah granularitas baris laporan.~~
+   **✅ RESOLVED 2026-08-21** — fix F-19 menghapus override `_group_by_sale()` dan `_select_sale()`,
+   diganti `_select_additional_fields()`. Granularitas laporan kembali identik dengan core. → F-06
 
 ---
 

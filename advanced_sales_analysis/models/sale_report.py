@@ -10,20 +10,12 @@ class SaleReport(models.Model):
     amount_to_invoice = fields.Float(string='Amount To Invoice', readonly=True)
     waiting_for_payment = fields.Float(string='Waiting for Payment', readonly=True)
 
-
-    def _group_by_sale(self):
-        res = super()._group_by_sale()
-        res += """, l.amount_received, l.waiting_for_payment, l.amount_to_invoice"""
+    def _select_additional_fields(self):
+        res = super()._select_additional_fields()
+        res['amount_received'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_received) ELSE 0 END"
+        res['waiting_for_payment'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.waiting_for_payment) ELSE 0 END"
+        res['amount_to_invoice'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_to_invoice) ELSE 0 END"
         return res
-
-    def _select_sale(self):
-        return super()._select_sale() + """, CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_received) 
-                                            ELSE 0 END AS amount_received
-                                            , CASE WHEN l.product_id IS NOT NULL THEN SUM(l.waiting_for_payment) 
-                                            ELSE 0 END AS waiting_for_payment
-                                            , CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_to_invoice) 
-                                            ELSE 0 END AS amount_to_invoice
-                                            """
 
 
 

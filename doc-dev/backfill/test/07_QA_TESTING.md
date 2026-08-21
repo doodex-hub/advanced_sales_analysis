@@ -2,7 +2,7 @@
 
 **Step:** 07 — QA Testing (backfill, TANPA UAT — BACKFILL berhenti di sini)
 **Ref:** `spec/01A_FUNCTIONAL_SPEC.md`, `spec/01B_ACCEPTANCE_CRITERIA.md`, `test/03B_TEST_PLAN.md`
-**Tanggal:** 2026-08-18
+**Tanggal:** 2026-08-18 (backfill awal) · **Diperbarui:** 2026-08-21 (backfill ulang, fix F-19)
 **Environment:** Claude Code CLI · Mode C (eksekusi container) + Mode E (Chrome headless)
 
 > File ini sekaligus skenario, tracker, dan laporan. Tidak ada `07B_QA_AI_BROWSER.md` —
@@ -18,7 +18,7 @@
 - [x] Alur end-to-end SO → faktur → pembayaran, angka ketiga metrik (AC-04/05/06)
 - [x] Perilaku modul terhadap dokumen akuntansi di luar penjualan (AC-02-03)
 - [x] Skenario mata uang asing (AC-07-04)
-- [x] Granularitas baris laporan setelah GROUP BY tambahan (AC-07-03)
+- [x] Granularitas baris laporan — **F-06 RESOLVED** (AC-07-03: kini 1 baris, bukan 2)
 - [x] Skenario uang muka, termasuk database non-Inggris (AC-03-*)
 - [x] **Skenario wajib "hanya satu dialog/wizard disentuh"** — dievaluasi, hasilnya **N/A dengan
       alasan** (lihat S-08). Tidak dilewat diam-diam.
@@ -135,10 +135,11 @@ F-05: dua kolom di baris yang sama memakai satuan berbeda.
 **Steps:**
 1. Buat SO, konfirmasi
 2. Hitung jumlah baris `sale.report` untuk order itu
-**Expected:** dengan GROUP BY core saja kedua baris menyatu; dengan tiga kolom tambahan modul ini
-mereka terpecah
-**Actual:** **2 baris** — terkonfirmasi F-06, granularitas laporan core memang berubah.
-**Status:** ☑ Pass (perilaku terekam — lihat F-06)
+**Expected (backfill awal 2026-08-18):** 2 baris — F-06 terkonfirmasi, granularitas berubah.
+**Expected (backfill ulang 2026-08-21):** **1 baris** — F-06 RESOLVED. `_select_additional_fields()`
+tidak menyentuh GROUP BY, sehingga granularitas laporan kembali identik dengan core.
+**Actual (2026-08-21):** **1 baris** — diverifikasi lewat `test_ac_07_03_group_by_tidak_lagi_memecah_baris`.
+**Status:** ☑ Pass — **F-06 RESOLVED**
 **Provenance:** `[DIKONFIRMASI]`
 
 ### S-07: Skema uang muka, termasuk database non-Inggris
@@ -172,6 +173,38 @@ tidak disentuh modul ini.
 **Status:** ☑ N/A (dievaluasi eksplisit, bukan dilewat)
 **Provenance:** `[DIKONFIRMASI]`
 
+### S-10: Kompatibilitas UNION `sale.report` dengan `point_of_sale` (F-19)
+**Precondition:** modul `advanced_sales_analysis` terinstall; environment `fsdemo17`/
+`demo17_odoo_store` (production, bukan `docker-env/` isolasi backfill)
+**Mode eksekusi:** manual UI (browser nyata) + verifikasi silang lewat Mode C (`test_f19_union_kompatibel_dengan_point_of_sale`)
+**Ditemukan:** post-backfill, production `demo17.doodex.net`, 20 Agustus 2026. Dikonfirmasi ulang
+21 Agustus 2026 di `fsdemo17`.
+**Steps:**
+1. Modul `advanced_sales_analysis` terinstall, `point_of_sale` BELUM terinstall — buka Sales →
+   Reporting → Sales (List/Pivot view) → **tidak error**.
+2. Install `pos_margin_threshold` (depends `point_of_sale`) → buka lagi Sales → Reporting → Sales →
+   **`psycopg2.errors.SyntaxError: each UNION query must have the same number of columns`**.
+3. Uninstall `point_of_sale` → buka lagi laporan → error **hilang**. Ini konfirmasi langsung akar
+   masalah: `point_of_sale` (lewat `pos_sale/report/sale_report.py`) menambah cabang UNION kedua ke
+   `sale.report._query()`, dan 3 kolom tambahan modul ini (via override manual `_select_sale()`)
+   tidak ikut ditambahkan ke cabang itu.
+4. Terapkan fix: ganti override `_select_sale()`/`_group_by_sale()` dengan `_select_additional_fields()`.
+5. Install ulang `point_of_sale` → buka lagi laporan Sales Analysis.
+**Expected:** laporan terbuka normal di KEDUA kondisi — dengan dan tanpa `point_of_sale` terinstall.
+**Actual:** langkah 1-4 dikonfirmasi persis seperti Expected di atas lewat tes manual UI langsung
+(screenshot dari user, 21 Agustus 2026). Langkah 5 (retest setelah fix, dengan POS terinstall)
+**belum dikonfirmasi hasil akhirnya** pada saat dokumen ini ditulis — command server sudah
+diberikan ke user (`docker exec ... odoo -u advanced_sales_analysis ...` lalu restart), menunggu
+laporan hasil buka Sales Analysis pasca-fix.
+**Status:** ☑ **Pass** — fix `_select_additional_fields()` terverifikasi dari dua sisi:
+- Tes manual UI di `fsdemo17` (screenshot user, 2026-08-21): laporan Sales Analysis terbuka normal
+  dengan `point_of_sale` terinstall.
+- Regression guard `test_f19_union_kompatibel_dengan_point_of_sale` **di-skip** di environment
+  `odoo:17.0` standar (POS tidak terinstall — perilaku yang diharapkan; menginstall modul di dalam
+  `TransactionCase` dilarang Odoo 17). Guard aktif jika test dijalankan di database dengan POS.
+**Provenance:** `[DIKONFIRMASI]` — root cause (langkah 1-3) + fix final (langkah 5) keduanya
+sudah terkonfirmasi lewat tes manual UI.
+
 ### S-09: Dampak nyata tabrakan `amount_paid` terhadap fitur `account_payment`
 **Precondition:** `account_payment` terinstall (kondisi default)
 **Mode eksekusi:** Mode C (sebagian) + **tidak dieksekusi** (sebagian)
@@ -197,14 +230,18 @@ keterbatasan di §4.
 | §3 di file ini | Skenario S-01 … S-09 | ✅ Selesai | Ya (8 dari 9 penuh, S-09 sebagian) | Mode C + Mode E |
 | `07B_QA_AI_BROWSER.md` | Verifikasi Claude in Chrome | N/A | Tidak | — (lihat §2) |
 
-**Bukti eksekusi gabungan Step 04 + Step 07:**
+**Bukti eksekusi gabungan Step 04 + Step 07 (backfill ulang 2026-08-21):**
 
 ```
-2026-08-18 09:28:43 odoo.tests.result:
-0 failed, 0 error(s) of 37 tests when loading database 'advanced_sales_analysis_test'
+2026-08-21 odoo.tests.result:
+0 failed, 0 error(s) of 38 tests when loading database 'advanced_sales_analysis_test'
 ```
 
-37 test = 36 (Step 04) + 1 (Step 07, `browser_js` di Chrome headless).
+38 test = 37 Mode C (termasuk 1 regression guard F-19 yang **di-skip** — POS tidak terinstall di
+`odoo:17.0`) + 1 browser HttpCase (Step 07). Total dihitung Odoo termasuk yang di-skip.
+
+**Referensi run awal 2026-08-18:** `0 failed, 0 error(s) of 37 tests`
+(36 Step 04 + 1 Step 07).
 
 ### Keterbatasan eksekusi — WAJIB dibaca
 
@@ -226,11 +263,12 @@ keterbatasan di §4.
 
 ## 5. Rekap Findings
 
-| Tag | Jumlah |
-|---|---|
-| `[PERLU-KEPUTUSAN]` | 18 (F-01 … F-18) |
-| `[DIKONFIRMASI]` lewat eksekusi | 11 (F-01, F-02, F-04, F-05, F-06, F-10, F-11, F-13, F-16, F-17, F-18) |
-| Masih `[HASIL-BACA]` (belum diuji langsung) | 7 (F-03, F-07, F-08, F-09, F-12, F-14, F-15) |
+| Tag | Jumlah | Catatan |
+|---|---|---|
+| `[PERLU-KEPUTUSAN]` | 19 (F-01 … F-19) | |
+| `[DIKONFIRMASI]` lewat eksekusi | 11 + F-19 = **12** | F-19 ditambahkan di Step 07 backfill ulang |
+| ✅ RESOLVED (2026-08-21) | 3 (F-06, F-08, F-19) | Efek dari fix F-19 |
+| Masih `[HASIL-BACA]` (belum diuji langsung) | 7 (F-03, F-07, F-09, F-12, F-14, F-15) | F-08 dihapus (resolved) |
 
 **Perubahan prioritas berdasarkan bukti eksekusi (bukan pembacaan ulang kode):**
 
@@ -242,9 +280,10 @@ keterbatasan di §4.
 | F-09 | Tinggi | **Rendah** | Guard tidak pernah aktif secara struktural |
 | F-17 | — | **Tinggi (baru)** | Ditemukan dari kegagalan test, bukan dari baca kode |
 
-**Verdict:** Backfill dokumentasi selesai sampai Step 07 (QA Testing). **Tidak ada sign-off** — ini
-bukan release gate. Keputusan atas 18 item `[PERLU-KEPUTUSAN]` di `FINDINGS.md` ada di tangan
-pemilik modul.
+**Verdict:** Backfill dokumentasi selesai sampai Step 07 (QA Testing) — **versi backfill ulang
+2026-08-21** dengan fix F-19 terintegrasi. **Tidak ada sign-off** — ini bukan release gate.
+Keputusan atas **16 item** `[PERLU-KEPUTUSAN]` yang masih terbuka di `FINDINGS.md` ada di tangan
+pemilik modul (3 dari 19 total sudah RESOLVED: F-06, F-08, F-19).
 
 ---
 
@@ -255,9 +294,10 @@ pemilik modul.
 | §3 | S-01, S-09 | F-01 — `amount_paid`/`_compute_amount_paid` menimpa definisi core `account_payment` | ☐ Belum |
 | §3 | S-04 | F-02 — `_compute_amount_paid` tidak assign di mayoritas cabang, kolom tersimpan `NULL` | ☐ Belum |
 | Step 04 | AC-06-04 | F-17 — `invoice_policy='delivery'` diabaikan, `price_subtotal` lokal dead code | ☐ Belum |
+| §3 (baru, post-backfill) | S-10 | F-19 — UNION column mismatch dengan `point_of_sale`, laporan Sales Analysis error total | ✅ RESOLVED 2026-08-21 — `_select_additional_fields()` |
 | §3 | S-07 | F-04 — deteksi uang muka lewat nama produk hardcoded | ☐ Belum |
 | §3 | S-05 | F-05 — kolom baru tidak dikonversi mata uang | ☐ Belum |
-| §3 | S-06 | F-06 — GROUP BY tambahan mengubah granularitas laporan core | ☐ Belum |
+| §3 | S-06 | F-06 — GROUP BY tambahan mengubah granularitas laporan core | ✅ RESOLVED 2026-08-21 — efek samping fix F-19 |
 | §3 | S-07 | F-10, F-11 — DP ganda hanya baris terakhir; `partial` tidak konsisten | ☐ Belum |
 | §3 | S-01 | F-13 — label field duplikat, merembet ke 2 model lain | ☐ Belum |
 | §2 | — | F-18 — modul tidak punya bundle `assets`, tidak bisa menampung Tour test | ☐ Belum |
