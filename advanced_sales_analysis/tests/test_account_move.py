@@ -197,6 +197,6 @@ class TestAsaAccountMove(AdvancedSalesAnalysisCommon):
         )
         sol_fields = self.env['sale.order.line']._fields
         self.assertEqual(
-            sol_fields['amount_to_invoice'].string, sol_fields['amount_received'].string,
+            sol_fields['asa_amount_to_invoice'].string, sol_fields['amount_received'].string,
             "label amount_to_invoice ternyata sudah diperbaiki — perbarui FINDINGS.md F-13",
         )

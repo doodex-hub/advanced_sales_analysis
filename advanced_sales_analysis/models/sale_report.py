@@ -14,7 +14,7 @@ class SaleReport(models.Model):
         res = super()._select_additional_fields()
         res['amount_received'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_received) ELSE 0 END"
         res['waiting_for_payment'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.waiting_for_payment) ELSE 0 END"
-        res['amount_to_invoice'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_to_invoice) ELSE 0 END"
+        res['amount_to_invoice'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.asa_amount_to_invoice) ELSE 0 END"
         return res
 
 
@@ -87,11 +87,11 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
     waiting_for_payment = fields.Float(string='Waiting for Payment', compute='_compute_waiting_for_payment_research', store=True)
     amount_received = fields.Float(string='Amount Received', compute='_compute_amount_received_research', store=True)
-    amount_to_invoice = fields.Float(string='Amount Received', compute='_compute_amount_to_invoice', store=True)
+    asa_amount_to_invoice = fields.Float(string='Amount Received', compute='_compute_asa_amount_to_invoice', store=True)
 
 
     @api.depends('waiting_for_payment', 'amount_received', 'state', 'product_id', 'untaxed_amount_invoiced', 'qty_delivered', 'product_uom_qty', 'invoice_lines.move_id.amount_paid')
-    def _compute_amount_to_invoice(self):
+    def _compute_asa_amount_to_invoice(self):
         """ Total of remaining amount to invoice on the sale order line (taxes excl.) as
                 total_sol - amount already invoiced
             where Total_sol depends on the invoice policy of the product.
@@ -140,9 +140,9 @@ class SaleOrderLine(models.Model):
                 else:
                     amount_to_invoice = line.price_subtotal - (line.waiting_for_payment + line.amount_received)
 
-            line.amount_to_invoice = amount_to_invoice
+            line.asa_amount_to_invoice = amount_to_invoice
 
-    @api.depends('amount_received', 'amount_to_invoice', 'order_id', 'invoice_lines',
+    @api.depends('amount_received', 'asa_amount_to_invoice', 'order_id', 'invoice_lines',
                  'invoice_lines.price_total', 'invoice_lines.move_id.state', 'invoice_lines.move_id.payment_state',
                  'invoice_lines.move_id.move_type', 'invoice_lines.move_id.amount_residual',
                  'invoice_lines.move_id.amount_paid')
@@ -191,7 +191,7 @@ class SaleOrderLine(models.Model):
             else:
                 line.waiting_for_payment = fixed_waiting_for_payment
 
-    @api.depends('waiting_for_payment', 'amount_to_invoice', 'order_id',
+    @api.depends('waiting_for_payment', 'asa_amount_to_invoice', 'order_id',
                  'invoice_lines', 'invoice_lines.price_total', 'invoice_lines.move_id.state',
                  'invoice_lines.move_id.payment_state', 'invoice_lines.move_id.move_type',
                  'invoice_lines.move_id.amount_residual', 'invoice_lines.move_id.amount_paid')

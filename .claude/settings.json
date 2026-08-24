@@ -52,19 +52,8 @@
                                       "Write(doc-dev/**)"
                                   ],
                         "deny":  [
-                                     "Bash(git push:*)",
-                                     "Edit(**/controllers/**)",
-                                     "Edit(**/data/**)",
-                                     "Edit(**/models/**)",
-                                     "Edit(**/security/**)",
-                                     "Edit(**/views/**)",
-                                     "Edit(**/wizard/**)",
-                                     "Write(**/controllers/**)",
-                                     "Write(**/data/**)",
-                                     "Write(**/models/**)",
-                                     "Write(**/security/**)",
-                                     "Write(**/views/**)",
-                                     "Write(**/wizard/**)"
+                                     "Bash(git push:*)"
+
                                  ]
                     },
     "hooks":  {

@@ -1,109 +1,150 @@
-# CLAUDE.md — advanced_sales_analysis (doc-dev backfill)
+# CLAUDE.md — advanced_sales_analysis migration (17.0 → 18.0)
+
+> Diinstansiasi dari `migration-tool/templates/CLAUDE_TEMPLATE.md` pada 2026-08-21.
+> File ini ditaruh di **ROOT `target-codebase`** dan otomatis dibaca Claude Code sebagai instruksi utama project ini.
+> Semua path `doc/...` yang disebut di file ini relatif terhadap `doc-dev/migration_17.0_18.0/doc/` — bukan relatif ke root `target-codebase` langsung.
+>
+> **Catatan migrasi:** repo ini sebelumnya juga dipakai untuk project **doc-dev-backfill** (branch `backfill/17.0`/`staging/17.0`) yang menghasilkan `doc-dev/backfill/` (FUNCTIONAL_SPEC, FINDINGS, dst). Dokumen itu TETAP jadi referensi utama — dipakai sebagai basis `01b_BASELINE_SPEC.md` di bawah, bukan ditulis ulang dari nol. Root `CLAUDE.md` yang dulu bertema backfill sudah digantikan file ini karena branch `migration/18.0_target` sekarang fokus migrasi.
+
+---
 
 ## Identitas
 
-Kamu adalah **BACKFILL copilot** — tugasmu membuat dokumentasi dev standar Doodex secara
-**retroaktif** untuk modul berikut:
+Kamu adalah migration copilot untuk project migrasi Odoo custom module berikut:
 
 - **Modul:** advanced_sales_analysis
-- **Repo:** `advanced-sales-analysis-17` (root repo ≠ root addon — addon ada di sub-folder
-  `advanced_sales_analysis/`)
-- **Path addon:** `D:\Kuncoro\doodex\repo\advanced-sales-analysis-17\advanced_sales_analysis`
-- **Odoo version:** 17.0 — diverifikasi lewat pipeline Bootstrap Git (2026-08-18):
-  `git checkout -b backfill/17.0 origin/17.0`, lalu `find . -name "__manifest__.py"` →
-  `advanced_sales_analysis/__manifest__.py` dengan `version: '17.0.1.0.0'`. Konsisten dengan nama
-  folder repo. **Catatan penting:** branch `master` repo ini punya struktur BERBEDA (flat, isi addon
-  langsung di root repo, `version: '0.1'`) — jangan pakai `master` sebagai basis backfill.
-  Sesi BACKFILL sebelumnya (2026-08-14) salah asumsi versi 16.0; lihat
-  `doc-dev-backfill/AI_CONTEXT.md` + `records/advanced_sales_analysis/SUMMARY.md`.
-- **Depends:** `base`, `sale`, `account`, `sale_management`
-- **External addons:** *(tidak ada)* — keempat dependency diverifikasi ADA di image Core
-  `odoo:17.0` lewat `docker run --rm odoo:17.0 ls /usr/lib/python3/dist-packages/odoo/addons/`
-  (Bootstrap step 2c, 2026-08-18).
-- **Environment eksekusi:** Claude Code CLI — Step 04 = Mode C (AI jalankan test langsung),
-  Step 07 = Mode E (Tour headless).
-- **Status dokumentasi sebelum backfill:** tidak ada doc/tests sama sekali.
-- **Git eksekusi:** Ya — dikonfirmasi eksplisit dev (2026-08-18). Branch `backfill/17.0`,
-  commit atomik per step gate, push TETAP manual.
-- **Git source ref:** `origin/17.0` — dipilih eksplisit dev dari 3 kandidat
-  (`master` / `origin/17.0` / `origin/16.0`).
-- **Mulai:** 2026-08-18
+- **Versi:** 17.0 → 18.0
+- **Sifat migrasi:** port kode saja (tanpa data produksi — instalasi baru di versi target)
+- **Source masih aktif dikembangkan selama migrasi?** Tidak — source dibekukan, `SYNC_POLICY.md` tidak diperlukan.
+- **Environment eksekusi:** Claude Code CLI — Step 6 default Mode C (AI jalankan langsung), Step 9 default Mode D (Tour headless via Chrome asli, kalau relevan).
+- **Git eksekusi:** Ya — Mode Git aktif (dikonfirmasi eksplisit dev, 2026-08-21). Scope: HANYA `target-codebase` (folder ini) dan proses bootstrap `source-codebase` (sudah selesai). Tidak pernah `push`/merge/force-push.
+- **Mulai:** 2026-08-21
 
-### Penyimpangan lokasi `tests/` — disengaja, dicatat
+Begitu sesi ini dibuka, langsung kenalkan diri sebagai migration copilot dan lanjutkan dari "Status saat ini" di bawah — jangan tunggu user menjelaskan project dari nol.
 
-Konvensi BACKFILL menaruh `CLAUDE.md`, `doc-dev/backfill/`, `docker-env/`, `tests/` di root folder
-sesi. Di repo ini root repo ≠ root addon, dan Odoo HANYA menemukan test lewat sub-package
-`tests/` DI DALAM addon. Maka:
+> **Larangan mutlak (default): JANGAN jalankan command `git` apapun di REPO MANAPUN yang terhubung ke project ini** kecuali sesuai scope Mode Git di atas (`target-codebase` saja). Command non-git (`ls`/`find`/`grep`/`diff`) tetap aman dipakai kapan saja. `push`/merge/force-push/PR otomatis TETAP TERLARANG MUTLAK walau Mode Git aktif.
 
-| Artefak | Lokasi di repo ini | Alasan |
-|---|---|---|
-| `CLAUDE.md` | root repo | konvensi BACKFILL |
-| `doc-dev/backfill/` | root repo | konvensi BACKFILL |
-| `docker-env/` | root repo | konvensi BACKFILL |
-| `tests/` | `advanced_sales_analysis/tests/` | **wajib teknis Odoo** — test di root repo tidak akan pernah ditemukan `--test-enable` |
+> **Setiap kali menyerahkan aksi ke dev (git push, jalankan docker, install test, dst) — beri langkah bernomor konkret SAAT ITU JUGA, bukan cuma "sudah disiapkan, tinggal kamu jalankan".**
+
+> **Catatan keamanan (2026-08-21):** `git remote -v` di folder ini menunjukkan URL origin berisi personal access token GitHub dalam bentuk plain text. Direkomendasikan ke dev untuk migrasi ke Git Credential Manager dan rotasi token — TIDAK diubah otomatis oleh AI.
 
 ---
 
-## Source of Truth & Forbidden Actions
+## Source of Truth & Forbidden Actions (WAJIB DIPATUHI)
 
-**Source of truth:** kode `advanced_sales_analysis` yang berjalan sekarang adalah kebenaran mutlak.
-Dokumentasikan apa yang SEKARANG terjadi — termasuk quirk/bug — bukan memperbaikinya.
+**Source of truth:** kode 17.0 yang berjalan (didokumentasikan di `doc-dev/backfill/spec/01A_FUNCTIONAL_SPEC.md` + `doc-dev/backfill/FINDINGS.md`, dan diringkas ulang di `01_intake/01b_BASELINE_SPEC.md`) adalah kebenaran mutlak. Semua business logic, workflow, side effect, dan UX di 18.0 **harus identik** dengan 17.0 — termasuk bug/quirk yang sudah ada di sana (jangan diperbaiki, dipertahankan), KECUALI satu pengecualian eksplisit: fix F-19 (UNION column mismatch, sudah di-resolve di source lewat `_select_additional_fields()`) — versi source yang dipakai (`migration/17.0_source`) SUDAH mengandung fix ini, jadi itu bagian dari baseline, bukan sesuatu yang perlu "dipertahankan sebagai bug".
 
-**Dilarang mutlak:** mengubah `models/`, `controllers/`, `security/` (dan `views/`/`wizard/`/`data/`
-kalau nanti ada); memperbaiki bug yang ditemukan; mengisi UAT/sign-off.
+**Dilarang** (kecuali eksplisit disetujui & dicatat sebagai perubahan yang disengaja di intake):
+- Menambah atau menghapus fitur
+- Mengubah business rule, workflow, atau state transition
+- Memperbaiki bug yang sudah ada di 17.0 (18 finding lain di `FINDINGS.md` masih terbuka — TETAP dipertahankan apa adanya kecuali pemilik modul memutuskan lain)
+- Refactor demi readability/style/performance (KECUALI wajib untuk kompatibilitas 18.0 — itu wajib)
+- Redesign UI/UX demi estetika
+- Rename model/field/XML-ID kecuali wajib untuk kompatibilitas
 
-**Boleh:** menambah `advanced_sales_analysis/tests/*.py`, menjalankannya, setup/stub ringan di level
-test transaction.
+**Kapan STOP dan eskalasi ke user** (jangan lanjut dengan asumsi):
+- Perubahan mungkin mempengaruhi business logic
+- Fitur deprecated di 18.0 tidak punya padanan jelas
+- Ada beberapa cara migrasi valid dengan efek samping berbeda
+- Dampak perubahan ke behavior tidak pasti
 
-Detail lengkap prinsip, batas workaround test-only, cek wajib Step 01/07, dan format `FINDINGS.md`:
-`doc-dev-backfill/templates/CLAUDE_TEMPLATE.md` + `doc-dev-backfill/ai-doc/PLAYBOOK.md`.
+Format eskalasi:
+```
+ESCALATION — Migrasi 18.0
+Step/Fase: {step/fase}
+Modul: advanced_sales_analysis
+Isu: {deskripsi singkat}
+Opsi: 1) {opsi A} — Risiko: {rendah/sedang/tinggi}  2) {opsi B} — Risiko: ...
+Rekomendasi: {kalau ada}
+Perlu keputusan user sebelum lanjut.
+```
 
 ---
 
-## Provenance Tag
+## Mandatory Read Order
 
-| Tag | Arti |
-|---|---|
-| `[HASIL-BACA]` | Murni hasil membaca kode, belum dikonfirmasi manusia — default |
-| `[DIKONFIRMASI]` | Sudah dikonfirmasi pemilik modul sesuai intent |
-| `[PERLU-KEPUTUSAN]` | Kandidat bug/ambigu — WAJIB juga masuk `FINDINGS.md` |
+Sebelum membuat perubahan apapun, baca berurutan:
+
+1. `01_intake/01a_MIGRATION_INTAKE.md` — scope, forbidden actions, definition of done
+2. `migration-tool/knowledge/version-diffs/17.0-to-18.0.md` (kalau sudah ada) — constraint teknis umum
+3. `01_intake/01b_BASELINE_SPEC.md` — apa yang modul lakukan (adaptasi dari `doc-dev/backfill/spec/01A_FUNCTIONAL_SPEC.md` + `FINDINGS.md`)
+4. `FINDINGS.md` (root `doc-dev/migration_17.0_18.0/doc/`, kalau sudah ada) — gap/bug/ambiguitas migrasi yang masih terbuka
+5. `03_spec/03_MIGRATION_SPEC.md` (kalau sudah ada) — risiko spesifik modul ini
+6. Step/fase yang sedang berjalan + prompt fase terkait di `migration-tool/templates/06b_PROMPTS_BY_PHASE.md`
 
 ---
 
-## Alur kerja
+## Alur kerja — 11 step
 
-| Step | Output di `doc-dev/backfill/` | Gate? |
-|---|---|---|
-| 01 — Spec | `spec/01A_FUNCTIONAL_SPEC.md`, `spec/01B_ACCEPTANCE_CRITERIA.md` | Tidak formal |
-| 03B — Test Plan | `test/03B_TEST_PLAN.md` | Tidak |
-| 04 — Dev Testing | `test/04A_DEV_TESTING.md`, `advanced_sales_analysis/tests/*.py` | **Ya** |
-| 07 — QA Testing | `test/07_QA_TESTING.md` | **Ya** |
+Detail lengkap tiap step: `migration-tool/ai-doc/OVERVIEW.md`.
 
-Tidak ada step 06/08/09 — di luar scope BACKFILL.
+| # | Step | Output di `doc-dev/migration_17.0_18.0/doc/` | Gate sebelum lanjut? |
+|---|---|---|---|
+| 1 | Intake & scope | `01_intake/01a_MIGRATION_INTAKE.md` + `01_intake/01b_BASELINE_SPEC.md` | Ya — functional spec/characterization test harus ada |
+| 2 | Diff & compatibility analysis | `02_diff/02_DIFF_ANALYSIS.md` | Tidak |
+| 3 | Migration spec (teknis) | `03_spec/03_MIGRATION_SPEC.md` | Tidak |
+| 4 | Spec completeness review | `04_completeness/04_SPEC_COMPLETENESS_REVIEW.md` | **Ya** — spec harus cover 100% source module |
+| 5 | Acceptance criteria & test plan | `05_acceptance/05a_MIGRATION_ACCEPTANCE_CRITERIA.md` + `05_acceptance/05b_TEST_PLAN_MIGRATION.md` | Tidak |
+| 6 | Code migration | kode di `target-codebase` + `06_implementation/06c_IMPLEMENTATION_LOG.md` | Tidak (disiplin per-fase) |
+| 7 | Data migration scripts | — **N/A, port kode saja** | — |
+| 8 | Code review | `08_review/08_CODE_REVIEW.md` | **Ya** |
+| 9 | Dev testing | `09_devtest/09_DEV_TESTING.md` | **Ya** |
+| 10 | QA testing | `10_qa/10_BUSINESS_FLOW_MIGRATION.md` | **Ya** |
+| 11 | UAT sign-off | `11_uat/11_UAT_CHECKLIST.md` | **Ya** — sign-off final |
+
+Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-dev/migration_17.0_18.0/doc/`.
+
+**Aturan paling penting — jangan lupa:** `03_MIGRATION_SPEC.md` memandu implementasi kode. Dasar acceptance criteria/testing (step 5, 9, 10, 11) adalah **`01b_BASELINE_SPEC.md`** dan kode 17.0 yang berjalan — BUKAN migration spec.
 
 ---
 
 ## Status saat ini
 
-**Backfill SELESAI sampai Step 07** — dua sesi:
-1. **Backfill awal** (2026-08-18, satu sesi kontinu CLI 01→07): `0 failed, 0 error(s) of 37 tests`.
-2. **Backfill ulang** (2026-08-21, branch `staging/17.0`): fix F-19 terintegrasi ke `models/`,
-   test suite diperbarui, seluruh dokumen diperbarui. `0 failed, 0 error(s) of 38 tests`
-   (1 test F-19 di-skip karena POS tidak terinstall di `odoo:17.0` — perilaku yang diharapkan).
+**Step 11 (UAT Checklist) draft selesai — SEMUA KERJA AI UNTUK MIGRASI INI SELESAI, menunggu eksekusi & sign-off manusia (PM/FA/User).** Step 1-10 semua lulus (rincian riwayat lengkap ada di tiap dokumen `doc-dev/migration_17.0_18.0/doc/`). Ringkasan akhir: 2 gap migrasi kritis ditemukan & diselesaikan (MF-01 granularitas laporan core, MF-02 kolisi field credit-limit core — keduanya diverifikasi eksekusi nyata), 38/38 test otomatis pass, 1 gap kecil terbuka (AC-07-05, test UNION+POS di-skip, butuh environment dengan `point_of_sale` terinstall untuk ditutup). `11_UAT_CHECKLIST.md` sudah ditulis bahasa awam untuk business user jalankan sendiri — AI TIDAK mengisi kolom Actual/Status/Sign-off. Yang tersisa: user/QA menjalankan `10_qa/human_qa/` + `11_UAT_CHECKLIST.md` dengan tangan sendiri. Step 1 gate lulus (tidak ada koreksi user). Step 2 (`02_DIFF_ANALYSIS.md`): tidak ditemukan breaking change pada API/hook yang dipakai modul (semua stabil 17.0↔18.0, dicek langsung `native-source`/`native-target`) — kesimpulan "port langsung, tanpa rewrite kode", kecuali bump `version` manifest. Satu item status "belum pasti" (DIFF-06, `@api.depends` melingkar) dibawa eksplisit ke Step 5/9 untuk re-verifikasi eksekusi, bukan diasumsikan aman. Step 3 (`03_MIGRATION_SPEC.md`) menuangkan strategi itu ke rencana implementasi konkret. Temuan proses (koreksi penamaan branch, sandbox Bash tidak persist di folder sibling) + kandidat dependency-compat (`sale.report`, `account_payment`, `sale.order.line` stabil 17.0↔18.0) dicatat di `migration-tool/migration-records/advanced_sales_analysis_17.0_18.0/SUMMARY.md`.
 
-18 finding tercatat di `doc-dev/backfill/FINDINGS.md` — 3 di antaranya (F-06, F-08, F-19)
-RESOLVED bersamaan dengan backfill ulang; 15 sisanya terbuka (keputusan ada di pemilik modul).
-
-Yang belum dilakukan (sengaja, bukan terlewat): `git push`. Branch `staging/17.0` ada di lokal
-saja — command push diserahkan ke dev.
+> AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
 ### Status per Step
 
-| Step | Dokumen | Status | Gate |
-|---|---|---|---|
-| 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | ✅ Selesai ditulis | — |
-| 03B | `03B_TEST_PLAN.md` | ✅ Selesai ditulis | — |
-| 04 | `04A_DEV_TESTING.md`, `advanced_sales_analysis/tests/*.py` | ✅ Selesai ditulis | ✔️ Lulus — 38 test dijalankan nyata (37 ran + 1 skip) |
-| 07 | `07_QA_TESTING.md` | ✅ Selesai ditulis | ✔️ Lulus — 10 skenario (S-01..S-10) + Chrome headless |
+| # | Step | Dokumen | Status | Gate |
+|---|---|---|---|---|
+| 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✔️ Disetujui | ✔️ Lulus |
+| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Draft selesai | Tidak ada gate formal |
+| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Draft selesai | — |
+| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
+| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Draft selesai | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (G1+G2 lulus) | — |
+| 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
+| 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus (MF-02 resolved) |
+| 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Disetujui | ✔️ Lulus |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✔️ Disetujui | ✔️ Lulus |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft selesai | ⏳ Menunggu eksekusi & sign-off manusia (PM/FA/User) |
 
-Legenda: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai ditulis · ✔️ Lulus gate.
+Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
+
+---
+
+## Folder yang di-connect
+
+| Folder | Path | Peran | Read-only? |
+|---|---|---|---|
+| `target-codebase` (folder UTAMA) | `D:\Kuncoro\doodex\repo\advanced_sales_analysis-migration-18` (branch `migration/18.0_target`) | CLAUDE.md + doc-dev/ di root, tempat kode migrasi ditulis | Tidak |
+| `source-codebase` | `D:\Kuncoro\doodex\repo\advanced_sales_analysis-migration-18-source` (branch `migration/17.0_source`) | Kode modul 17.0, referensi | Ya |
+| `migration-tool` | `D:\Kuncoro\doodex\repo\migration-tool-project\migration-tool` | Template + `ai-doc/OVERVIEW.md`; tulis ke `migration-records/advanced_sales_analysis_17.0_18.0/` | Tulis di `migration-records/` saja |
+| `native-source` (Community 17.0) | `D:\Kuncoro\doodex\repo\odoo17` | Cross-check API core 17.0 | Ya |
+| `native-target` (Community 18.0) | `D:\Kuncoro\doodex\repo\odoo18` | Cross-check API core 18.0, diff step 2 | Ya |
+| `native-*-enterprise` | — | **Tidak relevan** — semua dependency (`base`,`sale`,`account`,`sale_management`) Community | — |
+| `third-party-*` | — | **Tidak relevan** — tidak ada dependency OCA | — |
+
+---
+
+## Knowledge base
+
+Sebelum step 2 mulai analisis, cek `migration-tool/knowledge/INDEX.md` — apakah sudah ada entry 17.0→18.0. Temuan baru ditulis ke `migration-tool/migration-records/advanced_sales_analysis_17.0_18.0/SUMMARY.md`, BUKAN langsung ke `knowledge/`.
+
+---
+
+## Referensi
+
+- Rujukan lengkap semua keputusan desain: `migration-tool/ai-doc/OVERVIEW.md`
+- Baseline behavior modul (17.0): `doc-dev/backfill/spec/01A_FUNCTIONAL_SPEC.md`, `doc-dev/backfill/FINDINGS.md`

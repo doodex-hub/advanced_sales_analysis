@@ -159,20 +159,20 @@ class TestAsaSaleOrderLine(AdvancedSalesAnalysisCommon):
     def test_ac_06_01_to_invoice_sebelum_difakturkan(self):
         order = self._make_so()
         order.order_line.invalidate_recordset()
-        self.assertAlmostEqual(order.order_line.amount_to_invoice, 100.0)
+        self.assertAlmostEqual(order.order_line.asa_amount_to_invoice, 100.0)
 
     def test_ac_06_02_to_invoice_setelah_lunas(self):
         order = self._make_so()
         invoice = self._invoice_so(order)
         self._pay(invoice)
         order.order_line.invalidate_recordset()
-        self.assertAlmostEqual(order.order_line.amount_to_invoice, 0.0)
+        self.assertAlmostEqual(order.order_line.asa_amount_to_invoice, 0.0)
 
     def test_ac_06_03_to_invoice_nol_kalau_draft(self):
         order = self._make_so(confirm=False)
         order.order_line.invalidate_recordset()
         self.assertEqual(order.state, 'draft')
-        self.assertAlmostEqual(order.order_line.amount_to_invoice, 0.0)
+        self.assertAlmostEqual(order.order_line.asa_amount_to_invoice, 0.0)
 
     def test_ac_06_04_invoice_policy_delivery_diabaikan(self):
         """F-17: `price_subtotal` lokal (yang menghormati `qty_delivered`) tidak pernah dipakai.
@@ -187,7 +187,7 @@ class TestAsaSaleOrderLine(AdvancedSalesAnalysisCommon):
         line.qty_delivered = 4.0
         line.invalidate_recordset()
         self.assertAlmostEqual(
-            line.amount_to_invoice, 100.0,
+            line.asa_amount_to_invoice, 100.0,
             msg="kalau hasilnya 40.0, F-17 sudah diperbaiki — perbarui FINDINGS.md",
         )
         self.assertAlmostEqual(line.price_subtotal, 100.0)
@@ -200,12 +200,12 @@ class TestAsaSaleOrderLine(AdvancedSalesAnalysisCommon):
         line = order.order_line
 
         line.invalidate_recordset()
-        urutan_a = (line.amount_to_invoice, line.waiting_for_payment, line.amount_received)
+        urutan_a = (line.asa_amount_to_invoice, line.waiting_for_payment, line.amount_received)
 
         line.invalidate_recordset()
         received_dulu = line.amount_received
         waiting_dulu = line.waiting_for_payment
-        urutan_b = (line.amount_to_invoice, waiting_dulu, received_dulu)
+        urutan_b = (line.asa_amount_to_invoice, waiting_dulu, received_dulu)
 
         self.assertEqual(
             urutan_a, urutan_b,

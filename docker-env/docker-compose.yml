@@ -1,14 +1,20 @@
-# Diinstansiasi dari doc-dev-backfill/templates/docker-compose.yml.template (2026-08-18).
+# Diinstansiasi dari doc-dev-backfill/templates/docker-compose.yml.template (2026-08-18), diadaptasi
+# untuk migration-tool Step 6 G1 (2026-08-21):
+# - Volume mount diarahkan ke `advanced_sales_analysis/` DI DALAM target-codebase ini (bukan lagi ke
+#   clone backfill lama `advanced-sales-analysis-17`) — G1 harus menguji kode yang benar-benar
+#   dimigrasi (manifest version 18.0.1.0.0), bukan kode source 17.0.
+# - `name:` project di-rename supaya tidak collide dengan container backfill (`_backfill`) yang
+#   mungkin masih ada di Docker Desktop dev.
 #
-# Catatan penyimpangan dari template (disengaja, dicatat):
-# 1. `build: .` + `shm_size` dipakai SEJAK AWAL (bukan `image: odoo:17.0` lalu diganti saat Step 07)
+# Catatan penyimpangan dari template (disengaja, dicatat, masih berlaku):
+# 1. `build: .` + `shm_size` dipakai SEJAK AWAL (bukan `image: odoo:18.0` lalu diganti saat Step 07)
 #    — lihat komentar di docker-env/Dockerfile.
 # 2. Volume `odoo-data` untuk /var/lib/odoo ditambahkan supaya filestore ikut persist bersama
 #    db-data, bukan hilang tiap container diganti (akar masalah CAND-04).
 # 3. Service `mailpit`/`greenmail` DIHAPUS — modul tidak menyentuh email sama sekali.
 #
 # Root repo != root addon: yang di-mount adalah SUB-FOLDER advanced_sales_analysis/, bukan root repo.
-name: advanced_sales_analysis_backfill
+name: advanced_sales_analysis_migration_18
 
 services:
   db:
@@ -32,7 +38,7 @@ services:
     ports:
       - "8077:8069"
     volumes:
-      - D:/Kuncoro/doodex/repo/advanced-sales-analysis-17/advanced_sales_analysis:/mnt/extra-addons/advanced_sales_analysis
+      - D:/Kuncoro/doodex/repo/advanced_sales_analysis-migration-18/advanced_sales_analysis:/mnt/extra-addons/advanced_sales_analysis
       - odoo-data:/var/lib/odoo
       - ./logs:/var/log/odoo
     command: >

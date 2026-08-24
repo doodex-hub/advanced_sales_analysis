@@ -74,13 +74,22 @@ class TestAsaSaleReport(AdvancedSalesAnalysisCommon):
             "baris section ternyata ikut masuk sale.report — perbarui dokumentasi AC-07-02",
         )
 
-    def test_ac_07_03_group_by_tidak_lagi_memecah_baris(self):
-        """F-06 — DIPERBAIKI 2026-08-21 (F-19 fix): 3 kolom baru dipindah dari override manual
-        `_select_sale()`/`_group_by_sale()` ke hook resmi `_select_additional_fields()`. Efek
-        samping: kolom baru TIDAK LAGI ikut masuk GROUP BY, jadi granularitas laporan kembali sama
-        dengan core (dua baris SO produk sama menyatu jadi satu baris laporan, seperti sebelum
-        modul ini ada). Sebelum fix, test ini mengharapkan 2 baris (bug F-06); sekarang 1 baris
-        adalah perilaku yang BENAR.
+    def test_ac_07_03_group_by_granularitas_18_0(self):
+        """F-06 (17.0) — DIPERBAIKI 2026-08-21 (F-19 fix): 3 kolom baru modul ini dipindah dari
+        override manual `_select_sale()`/`_group_by_sale()` ke hook resmi
+        `_select_additional_fields()`. Modul ini TIDAK LAGI ikut menyumbang kolom apa pun ke
+        GROUP BY core (baik di 17.0 maupun 18.0) — soal apakah dua baris menyatu atau terpecah
+        sekarang 100% ditentukan oleh `_group_by_sale()` CORE, bukan modul ini.
+
+        MF-01 (migrasi 17.0->18.0, `doc-dev/migration_17.0_18.0/doc/FINDINGS.md`) — DIPUTUSKAN
+        Opsi 1, disetujui pemilik modul 2026-08-21: core `sale.report._group_by_sale()` 18.0
+        MENAMBAH kolom `l.price_unit`/`l.invoice_status`/`l.is_downpayment` ke GROUP BY (tidak ada
+        di 17.0). Skenario test ini (dua baris produk sama, `price_unit` BEDA: 60.0 vs 40.0)
+        akibatnya terpecah jadi 2 baris laporan di 18.0 — di 17.0 baris ini menyatu jadi 1 (karena
+        `price_unit` belum jadi bagian GROUP BY 17.0). Ini perubahan behavior CORE Odoo yang
+        disengaja diterima apa adanya (bukan bug modul, bukan sesuatu yang "diperbaiki" balik) —
+        assertion di bawah mendokumentasikan baseline 18.0 yang BENAR, BUKAN nilai yang sama
+        dengan 17.0 (`01_intake/01a_MIGRATION_INTAKE.md` §5, penyimpangan yang disetujui eksplisit).
         """
         order = self._make_so(lines=[
             (self.asa_product, 1.0, 60.0),
@@ -88,10 +97,10 @@ class TestAsaSaleReport(AdvancedSalesAnalysisCommon):
         ])
         rows = self._report_rows(order)
         self.assertEqual(
-            len(rows), 1,
-            "F-06 REGRESI — kedua baris terpecah lagi jadi 2 row, granularitas core berubah lagi. "
-            "Cek apakah _select_additional_fields() masih dipakai (jangan kembali ke override "
-            "_group_by_sale() manual).",
+            len(rows), 2,
+            "MF-01: granularitas 18.0 harus 2 baris (price_unit beda -> core GROUP BY memisahkan "
+            "sejak 18.0) — kalau balik jadi 1, core Odoo berubah lagi atau modul ini tanpa sengaja "
+            "menambah override _group_by_sale() manual (dilarang, lihat FINDINGS.md MF-01 Opsi 2).",
         )
 
     def test_f19_union_kompatibel_dengan_point_of_sale(self):
