@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 8 (Code Review) lulus gate (2026-08-26).** Step 1-6 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`, `b3dc1c9`, `4cc9463`, `0961f4d`). Step 7 N/A (port kode saja). Step 8: review lint/konvensi/business logic/security/performance (0🔴 0🟡 2🔵 info), gap vs `03_MIGRATION_SPEC.md` (semua sesuai), gap vs 30 AC (semua diverifikasi G1 kecuali AC-07-05 yang tetap gap warisan terbuka, bukan blocker), cek tabrakan method DUA ARAH (Arah 1: kolisi lama `_compute_amount_paid`/`[BSL-006]` tetap ada, bukan baru; Arah 2: dikonfirmasi tidak ada kolisi baru, sudah dicek Step 2). **Verdict: ✅ Lulus.** Detail: `08_review/08_CODE_REVIEW.md`. Lanjut ke Step 9 (Dev Testing, GATE) — sebagian besar sudah tercakup G1, perlu formalkan hasil + tangani AC-07-05.
+**Step 9 (Dev Testing) lulus gate (2026-08-26).** Step 1-8 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`, `b3dc1c9`, `4cc9463`, `0961f4d`, `1275859`). Step 9: audit kesiapan test (9a) — 39 method test di 4 file, SEMUA berstatus Lengkap (0 stub, dicek manual termasuk `test_qa_browser.py` yang pakai `browser_js`/JS assertion, bukan Python `assert`). Eksekusi = hasil G1 Step 6 (command identik, tidak ada perubahan kode sejak itu) — `0 failed, 0 error(s) of 39 tests`. Semua AC pass kecuali AC-07-05 (gap POS UNION, warisan, tidak dieksekusi, sudah didokumentasikan sebagai keterbatasan diketahui). **Verdict: ✅ Lulus.** Detail: `09_devtest/09_DEV_TESTING.md`. Lanjut ke Step 10 (QA Testing, GATE).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -120,7 +120,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (G1 pass) | — |
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
-| 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
+| 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Disetujui | ✔️ Lulus |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
