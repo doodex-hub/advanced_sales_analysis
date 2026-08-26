@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 1 (Intake) baru dimulai (2026-08-26).** Bootstrap project selesai: branch `migration/19.0_target` dibuat dari `migration/18.0_target`, `source-codebase` sibling clone dibuat, `.claude/settings.json`+`.gitignore` diganti versi `migration-tool` (menggantikan warisan `doc-dev-backfill`), folder referensi (`native-source`, `native-source-enterprise`, `native-target`+`native-target-enterprise` gabung di `enterprise19.0`) sudah dikonfirmasi dev. Belum ada dokumen `doc-dev/migration_18.0_19.0/doc/01_intake/*` yang ditulis — itu langkah berikutnya.
+**Step 1 (Intake) selesai (2026-08-26).** Bootstrap project selesai (branch `migration/19.0_target`, `source-codebase` sibling clone, CLI config migration-tool). `01a_MIGRATION_INTAKE.md` + `01b_BASELINE_SPEC.md` ditulis — baseline 18.0 direkonsiliasi 1:1 dari baseline 17.0 + 2 finding migrasi 17→18 (MF-01 granularitas GROUP BY, MF-02 rename `amount_to_invoice`→`asa_amount_to_invoice`, keduanya sudah RESOLVED & jadi bagian baseline), cross-check ke kode 18.0 aktual — 23/23 klaim `[MATCH]`, 0 gap baru. Satu asumsi belum ditanya eksplisit ke dev (source dianggap dibekukan) — dicatat di §Ringkasan `01a`, risiko rendah, tidak menghalangi lanjut. Lanjut ke Step 2 (diff 18.0→19.0 lewat `native-source`/`native-target`).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -112,8 +112,8 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 | # | Step | Dokumen | Status | Gate |
 |---|---|---|---|---|
-| 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | 🔄 Sedang dikerjakan | ⏳ Menunggu review user |
-| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ⬜ Belum mulai | Tidak ada gate formal |
+| 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✔️ Disetujui | ✔️ Lulus |
+| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | 🔄 Sedang dikerjakan | Tidak ada gate formal |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
