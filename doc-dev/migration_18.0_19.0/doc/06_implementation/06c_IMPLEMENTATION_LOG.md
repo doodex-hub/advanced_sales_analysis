@@ -96,6 +96,19 @@ Fase yang berlaku tanpa syarat: **A1-A5, B1** (semua modul punya manifest & mode
 - **Risiko:** LOW
 - **Status:** ✅ Selesai
 
+## [Prep G1] Update `docker-env/` untuk target 19.0
+
+- **Scope:** `docker-env/Dockerfile`, `docker-env/docker-compose.yml`
+- **Item spec (ref):** prasyarat Checkpoint G1 (`06a_CODE_MIGRATION_PHASES.md`), bukan bagian fase A1-B1 itu sendiri
+- **Aksi:**
+  - `Dockerfile`: `FROM odoo:18.0` → `FROM odoo:19.0`. **Belum diverifikasi eksekusi** (tidak ada akses jaringan di sesi ini untuk cek tag Docker Hub) — kalau `docker compose build` gagal pull image, ini indikasi tag salah/belum ada, bukan bug Dockerfile lain.
+  - `docker-compose.yml`: `name:` → `advanced_sales_analysis_migration_19` (hindari collide container project 17→18), volume mount path diarahkan ke folder ini (`advanced-sales-analysis-migration-19`, bukan folder lama `advanced_sales_analysis-migration-18`), `-d` database name → `advanced_sales_analysis_test_19`, host port `8077`→`8078` (hindari collide kalau container 18.0 masih hidup).
+- **Secara eksplisit TIDAK dilakukan:**
+  - Tidak menyentuh pola fallback `pip3 install --break-system-packages ... || ...` (dipertahankan apa adanya dari versi 18.0, belum dikonfirmasi masih perlu di 19.0)
+  - Tidak menghapus/mengubah volume `db-data`/`odoo-data` (biarkan persist sesuai desain lama)
+- **Risiko:** MEDIUM (tag image 19.0 belum diverifikasi tersedia — kegagalan di titik ini adalah kegagalan environment/infra, bukan kegagalan kode modul)
+- **Status:** ✅ Selesai (edit file) — efeknya baru diketahui saat G1 benar-benar dijalankan
+
 ## [Fase A2] N/A — dikonfirmasi Applicability Check (tidak ada view/XML)
 ## [Fase A3] N/A — dikonfirmasi Applicability Check (tidak ada TransientModel/ACL baru)
 ## [Fase B2] N/A — dikonfirmasi Applicability Check
