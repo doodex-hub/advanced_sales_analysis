@@ -1,26 +1,22 @@
-# gitignore.template — BACKFILL (doc-dev-backfill)
+# gitignore.template — migration-tool CLI bootstrap
 #
-# Instansiasi ke: {module}/.gitignore (root repo modul, sibling CLAUDE.md/doc-dev/)
-# Kalau {module}/.gitignore SUDAH ada (repo modul sudah punya sebelum BACKFILL) — JANGAN overwrite,
-# APPEND baris di bawah yang belum ada (cek dulu per baris, jangan duplikat).
-#
-# Isi di bawah murni artefak yang DIHASILKAN BACKFILL sendiri saat testing/operasi Mode B/C/Git —
-# bukan gitignore umum proyek Python (kalau modul butuh itu juga, itu urusan dev, di luar scope ini).
+# Instansiasi ke: target-codebase/.gitignore (root repo modul, sibling CLAUDE.md/doc-dev/)
+# Menggantikan .gitignore lama warisan doc-dev-backfill (dikonfirmasi dev, lihat CLAUDE.md).
 
 # Python bytecode cache — dihasilkan otomatis begitu Odoo/Python meng-import file modul untuk
-# testing (Mode B/C), termasuk lewat volume mount docker-env yang tembus balik ke folder host.
-# Cukup di-gitignore, TIDAK PERLU dihapus manual (`rm -rf`) sebelum commit.
+# testing (Mode B/C/D), termasuk lewat volume mount docker-env yang tembus balik ke folder host.
 __pycache__/
 *.pyc
 *.pyo
 
-# Log runtime Odoo dari docker-env (Mode B/C) — noise operasional per-run, bukan deliverable.
-docker-env/logs/
+# Log runtime Odoo dari docker-env (Mode B/C/D) — noise operasional per-run, bukan deliverable.
+# "**/" WAJIB di depan supaya match walau docker-env nested di dalam folder modul.
+**/docker-env/logs/
 
-# Command-log hook Claude Code CLI (lihat PLAYBOOK.md §"Setup CLI") — jejak operasional sesi CLI,
-# bukan bagian dokumentasi BACKFILL.
-.claude/backfill-command-log.jsonl
+# Command-log hook Claude Code CLI (lihat templates/cli-config/settings.json.template) — jejak
+# operasional sesi CLI, bukan bagian dokumentasi migrasi.
+.claude/migration-tool-command-log.jsonl
 
-# Config permission personal (auto-generated saat klik "Always allow" di CLI) — beda dev bisa
-# beda preferensi, jangan dipaksa seragam lewat commit bersama.
+# Config permission personal (auto-generated saat klik "Always allow" di CLI) — beda dev bisa beda
+# preferensi, jangan dipaksa seragam lewat commit bersama.
 .claude/settings.local.json
