@@ -111,11 +111,11 @@ class SaleOrderLine(models.Model):
                 uom_qty_to_consider = line.qty_delivered if line.product_id.invoice_policy == 'delivery' else line.product_uom_qty
                 price_reduce = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
                 price_subtotal = price_reduce * uom_qty_to_consider
-                if len(line.tax_id.filtered(lambda tax: tax.price_include)) > 0:
+                if len(line.tax_ids.filtered(lambda tax: tax.price_include)) > 0:
                     # As included taxes are not excluded from the computed subtotal, `compute_all()` method
                     # has to be called to retrieve the subtotal without them.
                     # `price_reduce_taxexcl` cannot be used as it is computed from `price_subtotal` field. (see upper Note)
-                    price_subtotal = line.tax_id.compute_all(
+                    price_subtotal = line.tax_ids.compute_all(
                         price_reduce,
                         currency=line.currency_id,
                         quantity=uom_qty_to_consider,

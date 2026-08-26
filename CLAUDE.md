@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 5 (Acceptance Criteria & Test Plan) selesai (2026-08-26).** Step 1-4 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`). Step 5: 30 AC (Given/When/Then) diadaptasi 1:1 dari AC migrasi 17→18 (execution-verified 38/38 test) — 29 AC warisan (field name disesuaikan `asa_amount_to_invoice`) + **1 AC BARU (`AC-06-03b`)** yang secara eksplisit memverifikasi fix DIFF-01 (`tax_id`→`tax_ids`) lewat jalur pajak `price_include`. Test plan memetakan tiap AC ke `tests/*.py` existing + 1 test method baru yang wajib ditambahkan Step 6. Detail: `05_acceptance/05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md`. Lanjut ke Step 6 (Code Migration) — mulai dari fix DIFF-01 + bump manifest.
+**Step 6 (Code Migration) — kode selesai, MENUNGGU keputusan mode G1 dari dev (2026-08-26).** Step 1-5 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`). Step 6: Applicability Check dikonfirmasi (semua fase kondisional N/A). Fase A1 (bump manifest `19.0.1.0.0`), A5 (rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118`, fix DIFF-01), B1 (review lengkap, tidak ada perubahan tambahan diperlukan) — semua ✅ selesai. Test baru `test_ac_06_03b_tax_ids_rename_price_include` ditambahkan di `tests/test_sale_order_line.py`. **BELUM dieksekusi (G1 install test)** — checkpoint yang memang didesain untuk tanya (lihat `06a_CODE_MIGRATION_PHASES.md`), sedang menunggu dev pilih mode eksekusi (A manual / B container disiapkan AI / C AI jalankan langsung, tersedia karena environment CLI). Detail: `06_implementation/06c_IMPLEMENTATION_LOG.md`.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 

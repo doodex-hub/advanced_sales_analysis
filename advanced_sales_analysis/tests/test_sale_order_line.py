@@ -192,6 +192,38 @@ class TestAsaSaleOrderLine(AdvancedSalesAnalysisCommon):
         )
         self.assertAlmostEqual(line.price_subtotal, 100.0)
 
+    def test_ac_06_03b_tax_ids_rename_price_include(self):
+        """DIFF-01 (migrasi 18.0->19.0): `sale.order.line.tax_id` di-rename `tax_ids` di core 19.0.
+
+        `_compute_asa_amount_to_invoice` memanggil `line.tax_id.filtered(...)`/`.compute_all(...)`
+        tanpa syarat untuk setiap baris SO ber-state 'sale'/'done' begitu ada pajak price-included
+        di baris itu — kalau rename ke `tax_ids` belum diterapkan, baris ini `AttributeError`.
+        Pajak price-included dipilih (bukan cuma pajak biasa) supaya cabang
+        `tax_ids.compute_all()` (bukan cuma `.filtered()`) benar-benar tereksekusi.
+        """
+        tax_10_included = self.env['account.tax'].create({
+            'name': 'ASA 10% (Tax Included)',
+            'amount_type': 'percent',
+            'amount': 10.0,
+            'type_tax_use': 'sale',
+            'price_include_override': 'tax_included',
+        })
+        product_taxed = self.env['product.product'].create({
+            'name': 'ASA Service Taxed',
+            'type': 'service',
+            'invoice_policy': 'order',
+            'list_price': 110.0,
+            'taxes_id': [Command.set(tax_10_included.ids)],
+        })
+        order = self._make_so(lines=[(product_taxed, 1.0, 110.0)])
+        line = order.order_line
+        line.invalidate_recordset()
+        # Tidak crash (AttributeError kalau tax_id/tax_ids belum di-rename) dan hasilnya identik
+        # dengan `line.price_subtotal` (cabang "else"/dead-code F-17 tetap dipertahankan — belum
+        # ada invoice, jadi `_get_invoice_lines()` kosong dan `any(...)` di atasnya False).
+        self.assertAlmostEqual(line.asa_amount_to_invoice, line.price_subtotal)
+        self.assertAlmostEqual(line.price_subtotal, 100.0, msg="110 gross - 10% pajak included = 100 net")
+
     def test_ac_06_05_urutan_pembacaan_field_melingkar(self):
         """F-03: ketiga compute saling depends — cek apakah hasil bergantung urutan baca."""
         order = self._make_so()
