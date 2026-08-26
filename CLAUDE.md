@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 3 (Migration Spec) selesai (2026-08-26).** Step 1-2 lulus/selesai (commit `e311017`, `193af31`). Step 3 menuangkan hasil diff jadi rencana implementasi konkret: strategi keseluruhan "port langsung + satu rename wajib + bump versi manifest" — TIDAK ada rewrite struktural (modul murni backend/compute, semua fase kondisional N/A). 2 Critical Blocker didaftar: (1) bump manifest ke `19.0.1.0.0`, (2) rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118` (DIFF-01). Detail: `03_spec/03_MIGRATION_SPEC.md`. Lanjut ke Step 4 (Spec Completeness Review, GATE).
+**Step 4 (Spec Completeness Review) lulus gate (2026-08-26).** Step 1-3 selesai (commit `e311017`, `193af31`, `a2956f8`). Step 4: enumerasi lengkap semua elemen `source-codebase/advanced_sales_analysis/` (models, controllers, security, static, tests, docker-env, non-kode) — SEMUA punya jejak keputusan di `03_MIGRATION_SPEC.md` (eksplisit untuk yang berubah, implisit-tapi-dicatat untuk yang zero-change). **Verdict: ✅ Lulus**, tidak ada gap. Detail: `04_completeness/04_SPEC_COMPLETENESS_REVIEW.md`. Lanjut ke Step 5 (Acceptance Criteria & Test Plan).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -115,7 +115,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✔️ Disetujui | ✔️ Lulus |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Draft selesai | Tidak ada gate formal |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Draft selesai | — |
-| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
+| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
