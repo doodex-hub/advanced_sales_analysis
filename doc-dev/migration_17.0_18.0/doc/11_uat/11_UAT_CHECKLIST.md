@@ -73,11 +73,13 @@
 
 ## Sign-off per Kelompok Fitur
 
+> **CATATAN TRANSPARANSI (2026-08-21):** T-01 s/d T-04 di bawah TIDAK dieksekusi manual lewat UI oleh business user — pemilik project ("Kuncoro", *"UAT dianggap selesai, percaya pada ai test"*) memutuskan menerima hasil test otomatis AI sebagai basis sign-off, menggantikan eksekusi tangan sendiri yang jadi prinsip default dokumen ini (lihat catatan di §atas). Kolom "Status" di bawah diisi berdasarkan **kesetaraan cakupan** ke test otomatis yang SUDAH dijalankan nyata (Step 9: 38/38 unit/integration test pass; Step 10: verifikasi `odoo shell` langsung untuk MF-02) — BUKAN laporan "sudah dicoba di UI dan sukses". Risiko yang TIDAK tertutup oleh basis ini: bug spesifik-UI (rendering, label, klik tombol) yang secara desain tidak bisa ditangkap test level Python/data — lihat `10_qa/human_qa/` kalau ingin menutup gap ini nanti.
+
 | # | Kelompok fitur | Skenario tercakup | Status | Catatan |
 |---|---|---|---|---|
-| 1 | Metrik dasar Sales Analysis | T-01 | [ ] Pass [ ] Fail | |
-| 2 | Uang muka & pembayaran sebagian | T-02, T-03 | [ ] Pass [ ] Fail | |
-| 3 | Kompatibilitas dengan fitur core (credit limit dsb) | T-04 | [ ] Pass [ ] Fail | |
+| 1 | Metrik dasar Sales Analysis | T-01 | [x] Pass (basis: test otomatis) | Setara `test_ac_07_01*` (Step 9) — nilai `amount_received`/`waiting_for_payment`/`amount_to_invoice` dikonfirmasi benar di level data, bukan diklik manual di pivot. |
+| 2 | Uang muka & pembayaran sebagian | T-02, T-03 | [x] Pass (basis: test otomatis) | Setara `test_ac_03_*`/`test_ac_04_*`/`test_ac_05_*` (Step 9). |
+| 3 | Kompatibilitas dengan fitur core (credit limit dsb) | T-04 | [x] Pass (basis: test otomatis + odoo shell) | Bagian data/ORM dikonfirmasi langsung (Step 10, `odoo shell` — field core tidak lagi collide). Bagian UI (warning credit limit ASLI tampil di layar) **tidak pernah diverifikasi visual sama sekali** — risiko residual terbesar dari keputusan ini. |
 
 ## Review Item Out-of-Scope
 
@@ -99,6 +101,6 @@ Stakeholder mengonfirmasi sadar & menerima dua perubahan yang disengaja dari pro
 |---|---|---|---|
 | PM | | | |
 | FA | | | |
-| User | | | |
+| User/Project Owner | Kuncoro | 2026-08-21 | *(disetujui via chat — "UAT dianggap selesai, percaya pada ai test", bukan tanda tangan fisik/digital formal)* |
 
-> Dikosongkan sampai stakeholder benar-benar menjalankan skenario T-01 dst. dengan tangan sendiri dan menyetujui.
+> **PENYIMPANGAN DARI PRINSIP DOKUMEN INI (dicatat eksplisit, bukan disembunyikan):** baris "User/Project Owner" di atas diisi AI atas instruksi eksplisit pemilik project SAAT ITU JUGA di chat, TANPA eksekusi tangan sendiri atas skenario T-01 s/d T-04 — bertentangan dengan prinsip di bagian atas dokumen ini ("sign-off idealnya tetap didasarkan pada eksekusi tangan sendiri, bukan laporan AI"). Baris PM/FA tetap dikosongkan (belum ada instruksi serupa dari role tersebut). Risiko yang diterima pemilik project dengan keputusan ini: gap visual/UI (lihat catatan di §Sign-off per Kelompok Fitur) tidak pernah terverifikasi sama sekali sebelum go-live.
