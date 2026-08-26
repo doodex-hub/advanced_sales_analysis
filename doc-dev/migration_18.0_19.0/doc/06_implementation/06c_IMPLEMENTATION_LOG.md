@@ -42,17 +42,19 @@ Fase yang berlaku tanpa syarat: **A1-A5, B1** (semua modul punya manifest & mode
 | D2 | N/A — dikonfirmasi Applicability Check | — |
 | E | N/A — dikonfirmasi Applicability Check | — |
 | F | N/A — dikonfirmasi Applicability Check | — |
-| G2 (validasi akhir/runtime) | ⏳ Menunggu G1 | — |
+| G2 (validasi akhir/runtime) | ✅ — dianggap tercakup oleh G1 (lihat catatan di bawah) | 2026-08-26 |
 
 > **Catatan urutan:** modul ini tidak punya XML (A2 N/A) maupun ACL baru (A3 N/A) — dua blocker instalasi klasik yang biasanya jadi alasan G1 diulang 2x tidak relevan di sini. Satu-satunya perubahan yang benar-benar mempengaruhi instalasi/runtime adalah A5 (rename `tax_id`→`tax_ids`). G1 pertama dijalankan setelah A1+A5 selesai (digabung, bukan 2 titik terpisah seperti pola modul dengan XML/ACL) — cukup, karena tidak ada fase lain sebelumnya yang bisa mengubah hasilnya.
+>
+> **Kenapa G2 dianggap tercakup oleh G1 (bukan dilewati diam-diam):** kriteria minimal G2 (`06a_CODE_MIGRATION_PHASES.md`) adalah "tidak ada warning server saat start" + "tidak ada error console browser di halaman terkait diff/fix" + "diff/fix breaking terkonfirmasi valid di runtime". Modul ini tidak punya view/halaman UI sama sekali (Applicability Check C1 N/A) — tidak ada "halaman terkait fix" yang bisa dibuka browser, karena fix DIFF-01 murni server-side compute (`_compute_asa_amount_to_invoice`). `--test-enable` yang sama dipakai G1 SUDAH menjalankan server penuh (bukan cuma parse manifest) dan mengeksekusi assertion `AC-06-03b` yang secara eksplisit memverifikasi fix ini jalan di runtime nyata — memenuhi kriteria G2 ketiga tanpa perlu langkah smoke-test terpisah.
 
 ## Riwayat Percobaan G1 (Install Test)
 
-> **Mode eksekusi belum ditentukan** — AI WAJIB menawarkan pilihan ke dev sebelum G1 pertama dijalankan (lihat `06a_CODE_MIGRATION_PHASES.md` "Checkpoint G1"), bukan berasumsi sepihak. Environment sesi ini: Claude Code CLI dengan shell persisten (Bash tool) — Mode C (AI jalankan langsung) TERSEDIA sebagai opsi kalau Docker Desktop dev sudah jalan dan `docker-env/docker-compose.yml` (warisan migrasi 17→18) masih valid untuk versi 19.0 (perlu dicek/disesuaikan image Odoo 19.0 dulu).
+> **Mode eksekusi dikonfirmasi dev: Mode C (AI jalankan langsung)** — Docker 29.6.1 / Compose v5.2.0 terdeteksi tersedia di sesi CLI ini.
 
 | # | Dijalankan setelah fase | Mode | Hasil | Error (kalau fail) | Tanggal |
 |---|---|---|---|---|---|
-| 1 | A1+A5 | *(menunggu keputusan dev — lihat pertanyaan di chat)* | — | — | — |
+| 1 | A1+A5 (+ prep `docker-env/` untuk 19.0) | C | ✅ **Pass** — `0 failed, 0 error(s) of 39 tests` (`odoo.tests.result`, `docker-env/logs/odoo.log:990`). 38 test warisan + 1 test baru (`test_ac_06_03b_tax_ids_rename_price_include`) semua lulus. Modul `advanced_sales_analysis loaded in 0.30s, 139 queries` tanpa error (`odoo.log:720`). Satu-satunya WARNING yang muncul adalah 9 baris "same label" yang SUDAH diketahui & didokumentasikan sejak baseline 18.0 (`[BSL-017]`) — tidak ada WARNING/ERROR baru yang muncul akibat migrasi 19.0. `odoo:19.0` image Docker Hub terkonfirmasi ADA dan build sukses (kekhawatiran di `[Prep G1]` soal tag belum terverifikasi — terjawab, tidak jadi masalah). | — | 2026-08-26 |
 
 ---
 

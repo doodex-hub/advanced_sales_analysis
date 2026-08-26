@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 6 (Code Migration) — kode selesai, MENUNGGU keputusan mode G1 dari dev (2026-08-26).** Step 1-5 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`). Step 6: Applicability Check dikonfirmasi (semua fase kondisional N/A). Fase A1 (bump manifest `19.0.1.0.0`), A5 (rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118`, fix DIFF-01), B1 (review lengkap, tidak ada perubahan tambahan diperlukan) — semua ✅ selesai. Test baru `test_ac_06_03b_tax_ids_rename_price_include` ditambahkan di `tests/test_sale_order_line.py`. **BELUM dieksekusi (G1 install test)** — checkpoint yang memang didesain untuk tanya (lihat `06a_CODE_MIGRATION_PHASES.md`), sedang menunggu dev pilih mode eksekusi (A manual / B container disiapkan AI / C AI jalankan langsung, tersedia karena environment CLI). Detail: `06_implementation/06c_IMPLEMENTATION_LOG.md`.
+**Step 6 (Code Migration) SELESAI, G1 lulus (2026-08-26).** Step 1-5 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`). Kode: A1 (bump manifest `19.0.1.0.0`), A5 (rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118`, fix DIFF-01), B1 (review, tidak ada perubahan tambahan). Test baru `test_ac_06_03b_tax_ids_rename_price_include`. Dev pilih Mode C (AI jalankan langsung) untuk G1 — `docker-env/` diupdate ke target `odoo:19.0` (image terkonfirmasi ada), `docker compose build`+`up` dijalankan langsung: **G1 PASS — `0 failed, 0 error(s) of 39 tests`**, modul load bersih, cuma WARNING lama `[BSL-017]` yang sudah diketahui. G2 dianggap tercakup G1 (modul tanpa UI, fix murni server-side, sudah tervalidasi lewat AC-06-03b runtime nyata). Detail: `06_implementation/06c_IMPLEMENTATION_LOG.md`. Step 7 (Data Migration) N/A — port kode saja. Lanjut ke Step 8 (Code Review, GATE).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -117,7 +117,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Draft selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Draft selesai | — |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | 🔄 Sedang dikerjakan | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (G1 pass) | — |
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
