@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 4 (Spec Completeness Review) lulus gate (2026-08-26).** Step 1-3 selesai (commit `e311017`, `193af31`, `a2956f8`). Step 4: enumerasi lengkap semua elemen `source-codebase/advanced_sales_analysis/` (models, controllers, security, static, tests, docker-env, non-kode) — SEMUA punya jejak keputusan di `03_MIGRATION_SPEC.md` (eksplisit untuk yang berubah, implisit-tapi-dicatat untuk yang zero-change). **Verdict: ✅ Lulus**, tidak ada gap. Detail: `04_completeness/04_SPEC_COMPLETENESS_REVIEW.md`. Lanjut ke Step 5 (Acceptance Criteria & Test Plan).
+**Step 5 (Acceptance Criteria & Test Plan) selesai (2026-08-26).** Step 1-4 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`). Step 5: 30 AC (Given/When/Then) diadaptasi 1:1 dari AC migrasi 17→18 (execution-verified 38/38 test) — 29 AC warisan (field name disesuaikan `asa_amount_to_invoice`) + **1 AC BARU (`AC-06-03b`)** yang secara eksplisit memverifikasi fix DIFF-01 (`tax_id`→`tax_ids`) lewat jalur pajak `price_include`. Test plan memetakan tiap AC ke `tests/*.py` existing + 1 test method baru yang wajib ditambahkan Step 6. Detail: `05_acceptance/05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md`. Lanjut ke Step 6 (Code Migration) — mulai dari fix DIFF-01 + bump manifest.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -116,8 +116,8 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Draft selesai | Tidak ada gate formal |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Draft selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
-| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
+| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Draft selesai | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | 🔄 Sedang dikerjakan | — |
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
