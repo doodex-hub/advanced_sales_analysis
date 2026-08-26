@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 6 (Code Migration) SELESAI, G1 lulus (2026-08-26).** Step 1-5 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`). Kode: A1 (bump manifest `19.0.1.0.0`), A5 (rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118`, fix DIFF-01), B1 (review, tidak ada perubahan tambahan). Test baru `test_ac_06_03b_tax_ids_rename_price_include`. Dev pilih Mode C (AI jalankan langsung) untuk G1 — `docker-env/` diupdate ke target `odoo:19.0` (image terkonfirmasi ada), `docker compose build`+`up` dijalankan langsung: **G1 PASS — `0 failed, 0 error(s) of 39 tests`**, modul load bersih, cuma WARNING lama `[BSL-017]` yang sudah diketahui. G2 dianggap tercakup G1 (modul tanpa UI, fix murni server-side, sudah tervalidasi lewat AC-06-03b runtime nyata). Detail: `06_implementation/06c_IMPLEMENTATION_LOG.md`. Step 7 (Data Migration) N/A — port kode saja. Lanjut ke Step 8 (Code Review, GATE).
+**Step 8 (Code Review) lulus gate (2026-08-26).** Step 1-6 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`, `b3dc1c9`, `4cc9463`, `0961f4d`). Step 7 N/A (port kode saja). Step 8: review lint/konvensi/business logic/security/performance (0🔴 0🟡 2🔵 info), gap vs `03_MIGRATION_SPEC.md` (semua sesuai), gap vs 30 AC (semua diverifikasi G1 kecuali AC-07-05 yang tetap gap warisan terbuka, bukan blocker), cek tabrakan method DUA ARAH (Arah 1: kolisi lama `_compute_amount_paid`/`[BSL-006]` tetap ada, bukan baru; Arah 2: dikonfirmasi tidak ada kolisi baru, sudah dicek Step 2). **Verdict: ✅ Lulus.** Detail: `08_review/08_CODE_REVIEW.md`. Lanjut ke Step 9 (Dev Testing, GATE) — sebagian besar sudah tercakup G1, perlu formalkan hasil + tangani AC-07-05.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -119,7 +119,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Draft selesai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (G1 pass) | — |
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
-| 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
+| 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
