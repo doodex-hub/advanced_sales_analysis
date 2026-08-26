@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 2 (Diff Analysis) selesai (2026-08-26).** Step 1 lulus gate (lihat commit `e311017`). Step 2: dibandingkan langsung `native-source` (`odoo18`) vs `native-target` (`enterprise19.0/odoo`) untuk semua hook/field yang dipakai/didefinisikan modul. **Satu temuan KRITIS baru:** `sale.order.line.tax_id` di-rename total jadi `tax_ids` di 19.0 (DIFF-01) — modul memanggil `line.tax_id` di 2 tempat (`models/sale_report.py:114,118`), akan `AttributeError` runtime kalau tidak di-fix. Selain itu semua hook (`_select_additional_fields()`, `_group_by_sale()`, `_get_invoice_lines()`) stabil, tidak ada kolisi field baru (DIFF-02 s.d. DIFF-06, semua risiko Rendah/Nihil) — tidak ada pengulangan gap MF-01/MF-02 dari migrasi sebelumnya. Detail: `02_diff/02_DIFF_ANALYSIS.md`; temuan general dicatat `migration-tool/migration-records/advanced_sales_analysis_18.0_19.0/SUMMARY.md` (project 18→19 pertama lewat tool ini). Lanjut ke Step 3 (Migration Spec) — DIFF-01 jadi item wajib pertama di rencana implementasi.
+**Step 3 (Migration Spec) selesai (2026-08-26).** Step 1-2 lulus/selesai (commit `e311017`, `193af31`). Step 3 menuangkan hasil diff jadi rencana implementasi konkret: strategi keseluruhan "port langsung + satu rename wajib + bump versi manifest" — TIDAK ada rewrite struktural (modul murni backend/compute, semua fase kondisional N/A). 2 Critical Blocker didaftar: (1) bump manifest ke `19.0.1.0.0`, (2) rename `line.tax_id`→`line.tax_ids` di `models/sale_report.py:114,118` (DIFF-01). Detail: `03_spec/03_MIGRATION_SPEC.md`. Lanjut ke Step 4 (Spec Completeness Review, GATE).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -114,7 +114,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✔️ Disetujui | ✔️ Lulus |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Draft selesai | Tidak ada gate formal |
-| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
+| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Draft selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
