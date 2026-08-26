@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**MIGRASI KODE SELESAI (2026-08-26) — MENUNGGU UAT sign-off manusia (Step 11).** Step 1-10 semua lulus/selesai dengan eksekusi nyata (commit `e311017`..`4fae461`, lihat riwayat commit branch `migration/19.0_target`). Ringkasan: modul `advanced_sales_analysis` genuinely kecil (murni backend/compute, semua fase kondisional Step 6 N/A) — satu-satunya perubahan kode adalah bump manifest ke `19.0.1.0.0` dan rename `sale.order.line.tax_id`→`tax_ids` (2 baris, DIFF-01/MF-01, core Odoo 19.0 me-rename field ini). G1 (install test) **PASS — 0 failed, 0 error(s) of 39 tests** (38 warisan + 1 test baru `AC-06-03b` yang secara khusus memverifikasi fix ini). Code review 0🔴 0🟡. QA otomatis lulus (kecuali AC-07-05, gap POS UNION warisan yang belum pernah dieksekusi di versi manapun — bukan blocker). 1 gap migrasi (MF-01) ditemukan & diselesaikan LANGSUNG tanpa eskalasi (solusi tunggal jelas, bukan trade-off seperti MF-01/MF-02 migrasi 17→18). `11_UAT_CHECKLIST.md` (draft skrip UAT bahasa awam) sudah ditulis — kolom Actual/Status/Sign-off SENGAJA dikosongkan, menunggu business user menjalankan T-01/T-02/T-03 sendiri. **AI berhenti di sini** (Step 11 selesai = titik henti yang memang didesain, lihat `ai-doc/USAGE_GUIDE.md` "Eksekusi Berkelanjutan" kondisi 4).
+**MIGRASI DINYATAKAN SELESAI (2026-08-26)** — Step 11 (UAT) di-sign-off oleh pemilik project ("Kuncoro") berdasarkan hasil test otomatis AI, BUKAN eksekusi manual UI ("UAT anggap selesai, percaya pada ai test") — **penyimpangan eksplisit dari prinsip default dokumen 11**, dicatat transparan di `11_UAT_CHECKLIST.md` (bukan disembunyikan). Risiko residual yang diterima: gap visual/UI (rendering, label, klik tombol) tidak pernah terverifikasi visual sama sekali — pola yang sama seperti migrasi 17→18 modul ini sebelumnya. Step 1-10 semua lulus dengan eksekusi nyata (commit `e311017`..`4bae5c1`): satu-satunya perubahan kode adalah bump manifest ke `19.0.1.0.0` dan rename `sale.order.line.tax_id`→`tax_ids` (2 baris, DIFF-01/MF-01 — core Odoo 19.0 me-rename field ini). G1 **PASS — 0 failed, 0 error(s) of 39 tests** (38 warisan + 1 test baru `AC-06-03b` yang khusus memverifikasi fix ini). Code review 0🔴 0🟡. 1 gap kecil tetap terbuka di luar sign-off ini: AC-07-05 (UNION dengan POS terinstall, belum pernah dieksekusi di versi manapun — bukan blocker).
 
 > **Serah-terima ke dev:** branch `migration/19.0_target` (di `target-codebase`, folder ini) berisi semua commit di atas, BELUM di-push (Mode Git tidak pernah push otomatis). Kalau siap, dev yang menjalankan `git push` sendiri setelah review. `source-codebase` (`advanced-sales-analysis-migration-19-source`, branch `migration/18.0_target`) tetap read-only, tidak disentuh git apa pun sepanjang project ini.
 
@@ -124,7 +124,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Disetujui | ✔️ Lulus |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✔️ Disetujui | ✔️ Lulus |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft skrip selesai | ⏳ Menunggu eksekusi & sign-off business user |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✔️ Disetujui | ⚠️ Lulus dengan penyimpangan — sign-off berbasis test AI, bukan eksekusi manual (lihat catatan transparansi di dokumen) |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 

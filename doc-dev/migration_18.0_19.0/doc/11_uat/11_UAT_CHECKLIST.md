@@ -60,11 +60,13 @@
 
 ## Sign-off per Kelompok Fitur
 
+> **CATATAN TRANSPARANSI (2026-08-26):** T-01 s/d T-03 di bawah TIDAK dieksekusi manual lewat UI oleh business user — pemilik project ("Kuncoro", *"UAT anggap selesai, percaya pada ai test"*) memutuskan menerima hasil test otomatis AI sebagai basis sign-off, menggantikan eksekusi tangan sendiri yang jadi prinsip default dokumen ini (lihat catatan di §atas). Kolom "Status" di bawah diisi berdasarkan **kesetaraan cakupan** ke test otomatis yang SUDAH dijalankan nyata (Step 6/9: G1, `0 failed, 0 error(s) of 39 tests`, termasuk `test_qa_measures_baru_tersedia_di_pivot_sales_analysis` via Chrome headless ASLI dan `test_ac_06_03b_tax_ids_rename_price_include` yang memverifikasi fix DIFF-01) — BUKAN laporan "sudah dicoba di UI dan sukses" oleh manusia. Risiko yang TIDAK tertutup oleh basis ini: bug spesifik-UI (rendering, label, klik tombol) yang secara desain tidak bisa ditangkap test level Python/data — lihat `10_qa/human_qa/` kalau ingin menutup gap ini nanti.
+
 | # | Kelompok fitur | Skenario tercakup | Status | Catatan |
 |---|---|---|---|---|
-| 1 | Instalasi bersih & laporan terbuka | T-01 | [ ] Pass [ ] Fail | |
-| 2 | Metrik finansial pivot (angka cocok) | T-02 | [ ] Pass [ ] Fail | |
-| 3 | Order berpajak tidak error (verifikasi migrasi 19.0) | T-03 | [ ] Pass [ ] Fail | |
+| 1 | Instalasi bersih & laporan terbuka | T-01 | [x] Pass (basis: test otomatis) | Setara `test_qa_measures_baru_tersedia_di_pivot_sales_analysis` (Step 6/9) — Chrome headless ASLI mengonfirmasi pivot terbuka dan measure muncul, bagian dari 39/39 test G1. |
+| 2 | Metrik finansial pivot (angka cocok) | T-02 | [x] Pass (basis: test otomatis) | Setara `test_ac_04_*`/`test_ac_05_*`/`test_ac_06_*`/`test_ac_07_*` (Step 9) — nilai `amount_received`/`waiting_for_payment`/`amount_to_invoice` dikonfirmasi benar di level data, bukan diklik manual di pivot. |
+| 3 | Order berpajak tidak error (verifikasi migrasi 19.0) | T-03 | [x] Pass (basis: test otomatis) | Setara `test_ac_06_03b_tax_ids_rename_price_include` (Step 6/9) — memverifikasi LANGSUNG fix DIFF-01 (`tax_id`→`tax_ids`) di level kode, hasil numerik benar. Bagian visual (tidak ada error di LAYAR saat user klik) tidak pernah diverifikasi manual. |
 
 ## Review Item Out-of-Scope
 
@@ -84,6 +86,6 @@ Stakeholder mengonfirmasi sadar & menerima hal-hal berikut (bukan bug baru, suda
 |---|---|---|---|
 | PM | | | |
 | FA | | | |
-| User | | | |
+| User/Project Owner | Kuncoro | 2026-08-26 | *(disetujui via chat — "UAT anggap selesai, percaya pada ai test", bukan tanda tangan fisik/digital formal)* |
 
-> Kosongkan sampai stakeholder benar-benar menjalankan skenario T-01 s.d. T-03 dengan tangan sendiri dan menyetujui.
+> **PENYIMPANGAN DARI PRINSIP DOKUMEN INI (dicatat eksplisit, bukan disembunyikan):** baris "User/Project Owner" di atas diisi AI atas instruksi eksplisit pemilik project SAAT ITU JUGA di chat, TANPA eksekusi tangan sendiri atas skenario T-01 s/d T-03 — bertentangan dengan prinsip di bagian atas dokumen ini ("sign-off idealnya tetap didasarkan pada eksekusi tangan sendiri, bukan laporan AI"). Baris PM/FA tetap dikosongkan (belum ada instruksi serupa dari role tersebut). Risiko yang diterima pemilik project dengan keputusan ini: gap visual/UI (lihat catatan di §Sign-off per Kelompok Fitur) tidak pernah terverifikasi sama sekali sebelum go-live — sama seperti keputusan yang diambil pada migrasi 17→18 modul ini sebelumnya.
