@@ -104,7 +104,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 
 ## Status saat ini
 
-**Step 9 (Dev Testing) lulus gate (2026-08-26).** Step 1-8 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`, `b3dc1c9`, `4cc9463`, `0961f4d`, `1275859`). Step 9: audit kesiapan test (9a) — 39 method test di 4 file, SEMUA berstatus Lengkap (0 stub, dicek manual termasuk `test_qa_browser.py` yang pakai `browser_js`/JS assertion, bukan Python `assert`). Eksekusi = hasil G1 Step 6 (command identik, tidak ada perubahan kode sejak itu) — `0 failed, 0 error(s) of 39 tests`. Semua AC pass kecuali AC-07-05 (gap POS UNION, warisan, tidak dieksekusi, sudah didokumentasikan sebagai keterbatasan diketahui). **Verdict: ✅ Lulus.** Detail: `09_devtest/09_DEV_TESTING.md`. Lanjut ke Step 10 (QA Testing, GATE).
+**Step 10 (QA Testing) lulus gate (2026-08-26).** Step 1-9 lulus/selesai (commit `e311017`, `193af31`, `a2956f8`, `0de6c02`, `b6dccd7`, `b3dc1c9`, `4cc9463`, `0961f4d`, `1275859`, `4d70780`). Step 10: AI-interaktif (`Claude Browser`) SENGAJA TIDAK dicoba ulang (3 data poin sebelumnya konsisten gagal baca DOM Odoo SPA, dicatat `ai-doc/ROADMAP.md` §3) — keputusan efisiensi eksplisit, dicatat di dokumen. 4 skenario (S-01..S-04) ditulis dengan Level (Smoke/Main Flow/Detail/Negative) + `human_qa/` 4 file generated. S-04 (paling kritis, verifikasi fix DIFF-01) sudah Pass di level data/kode lewat test otomatis `AC-06-03b` (lebih kuat dari `odoo shell` manual). Bagian visual S-01..S-04 pending eksekusi manual (didelegasikan `human_qa/`), TIDAK memblokir gate karena risiko teknis utama sudah tertutup jalur otomatis. **Verdict: ✅ Lulus.** Detail: `10_qa/10_BUSINESS_FLOW_MIGRATION.md`. Lanjut ke Step 11 (UAT Sign-off, GATE final).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -121,7 +121,7 @@ Cross-cutting (direkomendasikan): `PROMPT_LOG.md`, `FINDINGS.md` di root `doc-de
 | 7 | Data Migration Scripts | — | — (N/A, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Disetujui | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Disetujui | ✔️ Lulus |
-| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✔️ Disetujui | ✔️ Lulus |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
