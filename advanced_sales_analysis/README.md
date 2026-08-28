@@ -63,7 +63,7 @@ Navigate to the Sales Analysis report to view the new metrics.
 Once installed, the new metrics will be available in the Sales Analysis report. Use the filters and grouping options to analyze the data as needed.
 
 ## Compatibility
-Odoo version: 16.0
+Odoo version: 18.0
 
 ## License
 This module is licensed under [LGPLv3 licensed](./LICENSE)
