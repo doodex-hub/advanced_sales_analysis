@@ -1,1 +1,26 @@
+# gitignore.template — BACKFILL (doc-dev-backfill)
+#
+# Instansiasi ke: {module}/.gitignore (root repo modul, sibling CLAUDE.md/doc-dev/)
+# Kalau {module}/.gitignore SUDAH ada (repo modul sudah punya sebelum BACKFILL) — JANGAN overwrite,
+# APPEND baris di bawah yang belum ada (cek dulu per baris, jangan duplikat).
+#
+# Isi di bawah murni artefak yang DIHASILKAN BACKFILL sendiri saat testing/operasi Mode B/C/Git —
+# bukan gitignore umum proyek Python (kalau modul butuh itu juga, itu urusan dev, di luar scope ini).
+
+# Python bytecode cache — dihasilkan otomatis begitu Odoo/Python meng-import file modul untuk
+# testing (Mode B/C), termasuk lewat volume mount docker-env yang tembus balik ke folder host.
+# Cukup di-gitignore, TIDAK PERLU dihapus manual (`rm -rf`) sebelum commit.
 __pycache__/
+*.pyc
+*.pyo
+
+# Log runtime Odoo dari docker-env (Mode B/C) — noise operasional per-run, bukan deliverable.
+docker-env/logs/
+
+# Command-log hook Claude Code CLI (lihat PLAYBOOK.md §"Setup CLI") — jejak operasional sesi CLI,
+# bukan bagian dokumentasi BACKFILL.
+.claude/backfill-command-log.jsonl
+
+# Config permission personal (auto-generated saat klik "Always allow" di CLI) — beda dev bisa
+# beda preferensi, jangan dipaksa seragam lewat commit bersama.
+.claude/settings.local.json
