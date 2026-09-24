@@ -17,7 +17,7 @@ Kamu adalah migration copilot untuk project migrasi Odoo custom module berikut:
 - **Source masih aktif dikembangkan selama migrasi?** Tidak (asumsi — branch `migration/19.0` adalah hasil akhir migrasi 18→19 yang sudah SELESAI). Konfirmasi di Step 1; kalau Ya, ikuti `SYNC_POLICY.md`.
 - **Environment eksekusi:** Claude Code CLI
 - **Git eksekusi:** Ya — Mode Git aktif, dideteksi dari `.claude/settings.json` (varian `settings.json.mode-git.template`, bootstrap 2026-08-26, path referensi diperbarui untuk 19.0→20.0 pada 2026-09-24). AI boleh `fetch`/`checkout`/`commit`/`diff`/`log`/`show` di `target-codebase` (repo ini) sesuai `migration-tool/ai-doc/USAGE_GUIDE.md` "Mode Git", **tidak pernah** `push`/merge/force-push/PR. Auto-commit di setiap step aktif. `git push` 100% manual dev.
-- **Mulai:** 2026-09-24 (conditioning; Step 1 belum mulai)
+- **Mulai:** 2026-09-24 (conditioning + Step 1–10 di hari yang sama; Step 11 menunggu sign-off manusia)
 
 Begitu sesi ini dibuka, langsung kenalkan diri sebagai migration copilot dan lanjutkan dari "Status saat ini" di bawah — jangan tunggu user menjelaskan project dari nol.
 
@@ -116,11 +116,9 @@ Cross-cutting, LATEN: `HOTFIX_REVIEW.md` + `HOTFIX_LOG.md` di root `doc/` — di
 
 ## Status saat ini
 
-**Step 0 — Conditioning selesai (2026-09-24).** Branch `migration/20.0` dibuat dari `migration/19.0` (HEAD `45c0319`, "Step 11 gate passed" migrasi 18→19). `.claude/settings.json` diperbarui (deny list native 19/20, `git show` diizinkan), CLAUDE.md ini ditulis ulang, skeleton `doc-dev/migration_19.0_20.0/doc/` dibuat (folder kosong + `.gitkeep`). **Step 1 Intake belum mulai** — sesi eksekusi berikutnya mulai dari Step 1.
+**Step 1–10 selesai, Step 11 menunggu manusia (2026-09-24, satu sesi CLI).** Intake dijawab dev (port kode, source beku, aset store di-port, MF-02 POS diterima, AI jalankan Docker). Perubahan kode: manifest `20.0.1.0.0` + `images`; `sale.report._select_additional_fields()` → `_select_dict(table)` (MF-01, hook dihapus di core 20.0); aset store dari branch `19.0`; 2 test baru. Test: Run A (Community) / B (Enterprise di addons-path) / C (`pos_sale`) semua `0 failed, 0 error(s) of 43 tests`; AC-07-05 (UNION POS) tertutup untuk pertama kali. QA: A/B 19.0↔20.0 identik.
 
-Open item untuk Step 1 intake (dicatat saat conditioning, belum diputuskan):
-- CLAUDE.md lama menyebut branch hasil migrasi `migration/19.0_target`, tapi nama aktual branch-nya `migration/19.0` (lokal = `origin/migration/19.0`). Semua rujukan di file ini sudah pakai nama aktual.
-- Branch rilis `19.0`/`staging/19.0` berisi 5 commit pasca-migrasi yang TIDAK ada di `migration/19.0` (commit "cleaning" + aset store: `banner.gif`, `icon.png`, `index.html`, fix key `images` di manifest). Branch `migration/20.0` tidak membawa perubahan itu — putuskan di intake apakah aset store perlu di-port ke 20.0.
+**Sesi berikutnya:** (1) dev/PM/FA menjalankan `11_uat/11_UAT_CHECKLIST.md` dan mengisi sign-off; (2) setelah sign-off, AI tulis `doc/MIGRATION_CLOSED.md` (SHA HEAD) + commit "Step 11 gate passed"; (3) `git push` = dev. Open item non-blocking: kandidat knowledge di `migration-tool/migration-records/advanced_sales_analysis_19.0_20.0/SUMMARY.md` (CAND-01…09) menunggu sesi curation. Server G2 lokal mungkin masih hidup (container `asa20_g2`, port 8080).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja, supaya sesi berikutnya tahu persis harus lanjut dari mana tanpa tanya ulang ke user.
 
@@ -140,7 +138,7 @@ Ringkasan cepat — detail lengkap tiap step ada di field `Status:` di header ma
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Lulus 2026-09-24 (skill odoo-review; 0🔴 0🟡 2🔵) | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Lulus 2026-09-24 (Run A/B/C: 0 failed of 43; AC-07-05 tertutup) | ✔️ Lulus |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✔️ Lulus 2026-09-24 (6/6 skenario, A/B 19↔20 identik) | ✔️ Lulus |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft skrip UAT 2026-09-24 | ⏳ Menunggu eksekusi & sign-off manusia |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
