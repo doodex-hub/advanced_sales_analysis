@@ -137,7 +137,7 @@ Ringkasan cepat — detail lengkap tiap step ada di field `Status:` di header ma
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai 2026-09-24 (38 AC) | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai 2026-09-24 (A1, A5, A6; G1 #3 0 failed of 43) | — (disiplin per-fase A1→G2) |
 | 7 | Data Migration Scripts | `07_DATA_MIGRATION_PLAN.md` + script — cuma kalau upgrade instance | — N/A (port kode saja, intake §3) | — |
-| 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
+| 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Lulus 2026-09-24 (skill odoo-review; 0🔴 0🟡 2🔵) | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
