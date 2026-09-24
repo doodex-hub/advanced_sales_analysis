@@ -132,7 +132,7 @@ Ringkasan cepat — detail lengkap tiap step ada di field `Status:` di header ma
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✔️ Disetujui (dialog intake dev 2026-09-24) | ✔️ Lulus 2026-09-24 |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai 2026-09-24 (10 DIFF, 1 kritis: `_select_additional_fields` dihapus) | Tidak ada gate formal |
-| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
+| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai 2026-09-24 | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — (disiplin per-fase A1→G2) |
