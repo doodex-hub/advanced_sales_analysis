@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|
 | MF-01 | Hook `sale.report._select_additional_fields()` dihapus di 20.0 — 3 measure diam-diam 0/NULL, pivot crash `sum(text)` | Step 1 (pre-scan), dibuktikan Step 2 probe | `[GAP-MIGRASI]` | **Kritis** | ✅ RESOLVED 2026-09-24 — port `_select_dict` (commit `83e8719`), G1 A/B/C 0 failed of 43 |
 | MF-02 | `pos_sale` 20.0 mengisi kolom modul `sale.report.amount_to_invoice` untuk baris POS (19.0: NULL) | Step 1 | `[GAP-MIGRASI]` | Rendah | ✅ DIPUTUSKAN dev 2026-09-24: terima & dokumentasikan |
-| MF-03 | Core 20.0 menambah `l.name`/`l.product_uom_id` ke GROUP BY `sale.report` — granularitas baris laporan lebih halus | Step 2 | `[GAP-MIGRASI]` | Rendah | ✅ Diterima (preseden MF-01 17→18) — dev boleh mengoreksi |
+| MF-03 | Core 20.0 menambah `l.name`/`l.product_uom_id` ke GROUP BY `sale.report` — granularitas baris laporan lebih halus | Step 2 | `[GAP-MIGRASI]` | Rendah | ✅ Diterima (preseden MF-01 17→18); dikonfirmasi pemilik project saat UAT sign-off 2026-09-24 |
 
 ---
 
@@ -38,7 +38,7 @@
 **Lokasi:** `odoo20/addons/pos_sale/report/sale_report.py:57`
 **Deskripsi:** `_select_pos_dict()` native punya key `amount_to_invoice` (sisa dari versi lama; `sale.report` native 20.0 tidak punya field itu). Karena modul mendefinisikan `sale.report.amount_to_invoice`, cabang POS UNION mengisinya dengan subtotal POS yang belum difakturkan (× rate). Di 19.0 cabang POS selalu `NULL` untuk kolom modul.
 **Dampak:** hanya bila `pos_sale` terinstall (bukan dependency modul). Total *Amount To Invoice* di pivot bertambah nilai POS belum difakturkan. `amount_received`/`waiting_for_payment` tetap NULL di baris POS.
-**Keputusan pemilik modul:** Kuncoro, 2026-09-24 (dialog intake): **"Terima & dokumentasikan"** — tanpa override tambahan. AC-07-05 tetap gap eksekusi terbuka.
+**Keputusan pemilik modul:** Kuncoro, 2026-09-24 (dialog intake): **"Terima & dokumentasikan"** — tanpa override tambahan. (Gap eksekusi AC-07-05 tertutup di Step 9 Run C, lihat catatan di bawah.)
 
 ### MF-03 — Granularitas GROUP BY `sale.report` core 20.0
 **Ditemukan di:** Step 2 (2026-09-24)

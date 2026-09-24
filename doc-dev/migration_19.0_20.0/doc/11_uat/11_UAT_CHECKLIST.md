@@ -4,9 +4,9 @@
 **Versi:** 19.0 → 20.0
 **Ref:** `05_acceptance/05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `10_qa/10_BUSINESS_FLOW_MIGRATION.md`
 **Tanggal:** 2026-09-24
-**Status:** 🔄 Draft siap dieksekusi — **menunggu eksekusi & sign-off manusia** (PM/FA/User). AI tidak mengisi kolom Actual/Status/Sign-off.
+**Status:** ✔️ Disetujui 2026-09-24 — sign-off berbasis **bukti test AI** atas keputusan eksplisit pemilik project (Kuncoro: *"UAT sign-off pakai bukti test AI, tutup migrasinya"*). Kolom Actual T-01…T-03 TIDAK diisi (tidak ada eksekusi tangan manusia) — lihat catatan penyimpangan di §Sign-off.
 
-> Bukti AI yang sudah ada (bukan pengganti UAT): Step 9 (41 method test, 0 failed di 3 environment) dan Step 10 (6/6 skenario, A/B 19.0↔20.0 identik). Di migrasi 18→19 dev memilih sign-off berbasis bukti AI sebagai penyimpangan eksplisit — itu keputusan per project dan **tidak diasumsikan berlaku lagi di sini**.
+> Bukti AI yang sudah ada (bukan pengganti UAT): Step 9 (41 method test, 0 failed di 3 environment) dan Step 10 (6/6 skenario, A/B 19.0↔20.0 identik). Di migrasi 18→19 dev memilih sign-off berbasis bukti AI sebagai penyimpangan eksplisit — itu keputusan per project dan **tidak diasumsikan** — pemilik project memutuskan ulang secara eksplisit untuk migrasi 19→20 pada 2026-09-24 (lihat §Sign-off).
 
 ---
 
@@ -55,16 +55,16 @@
 
 | # | Kelompok fitur | Skenario tercakup | Status | Catatan |
 |---|---|---|---|---|
-| 1 | Sales Analysis 3 measure | T-01, T-02 | [ ] Pass [ ] Fail | |
-| 2 | Uang muka & credit note | T-03 | [ ] Pass [ ] Fail | |
+| 1 | Sales Analysis 3 measure | T-01, T-02 | [x] Pass (basis: bukti test AI) | T-01 setara `test_qa_measures_baru_tersedia_di_pivot_sales_analysis` (Chrome headless asli, Run A/B/C). T-02 setara QA Step 10 S-02: skenario yang sama dijalankan live di 19.0 dan 20.0, hasil identik (1200/300/1500) + AC-04/05/06/07. Tidak diklik manual di pivot. |
+| 2 | Uang muka & credit note | T-03 | [x] Pass (basis: bukti test AI) | Setara `test_ac_03_*`, `test_ac_04_05/06`, `test_ac_02_02` (faktur dibuat langsung, bukan lewat wizard down payment UI). Alur wizard DP end-to-end di UI 20.0 TIDAK pernah dieksekusi. |
 
 ## Review Item Out-of-Scope / Perubahan Diterima
 
 Stakeholder mengonfirmasi sadar & menerima:
-- [ ] MF-02 — dengan Point of Sale terinstall, *Amount To Invoice* di baris POS berisi subtotal POS belum difakturkan (19.0: kosong). Diputuskan dev 2026-09-24.
-- [ ] MF-03 — baris laporan dipisah per deskripsi baris SO (perubahan core Odoo 20). Total tidak berubah.
-- [ ] Aset store (banner.gif, icon.png, index.html) diambil dari branch rilis `19.0`.
-- [ ] 15 quirk lama (BSL-011…BSL-021: deteksi "Down payment" by nama, kolom tanpa konversi kurs, label field duplikat, dst.) sengaja TIDAK diperbaiki.
+- [x] MF-02 — dengan Point of Sale terinstall, *Amount To Invoice* di baris POS berisi subtotal POS belum difakturkan (19.0: kosong). Diputuskan dev 2026-09-24.
+- [x] MF-03 — baris laporan dipisah per deskripsi baris SO (perubahan core Odoo 20). Total tidak berubah. Diterima pemilik project saat sign-off 2026-09-24 (sebelumnya diputuskan AI mengikuti preseden MF-01 17→18).
+- [x] Aset store (banner.gif, icon.png, index.html) diambil dari branch rilis `19.0`.
+- [x] 15 quirk lama (BSL-011…BSL-021: deteksi "Down payment" by nama, kolom tanpa konversi kurs, label field duplikat, dst.) sengaja TIDAK diperbaiki.
 
 ## Prasyarat Sebelum Go-Live Produksi
 
@@ -80,8 +80,10 @@ Stakeholder mengonfirmasi sadar & menerima:
 |---|---|---|---|
 | PM | | | |
 | FA | | | |
-| User | | | |
+| User/Project Owner | Kuncoro | 2026-09-24 | *(disetujui via chat — "UAT sign-off pakai bukti test AI, tutup migrasinya", bukan tanda tangan fisik/digital formal)* |
+
+> **PENYIMPANGAN DARI PRINSIP DOKUMEN INI (dicatat eksplisit):** baris "User/Project Owner" diisi AI atas instruksi eksplisit pemilik project di chat, TANPA eksekusi tangan sendiri atas T-01…T-03. Baris PM/FA dikosongkan (tidak ada instruksi dari role tersebut). Pola yang sama dengan migrasi 17→18 dan 18→19 modul ini. **Risiko sisa yang diterima:** (1) perilaku visual/UI di luar yang dicek `browser_js` (label, rendering, klik lain) tidak diverifikasi manusia; (2) alur wizard down payment UI 20.0 end-to-end tidak dieksekusi; (3) nilai baris POS MF-02 hanya dari baca kode (tidak ada POS order dibuat). Checklist `10_qa/human_qa/` tersedia untuk menutup gap ini kapan saja.
 
 ## Penutupan Migrasi
 
-- [ ] `doc/MIGRATION_CLOSED.md` ditulis dengan SHA HEAD `migration/20.0` — **SETELAH** sign-off di atas terisi (belum ditulis).
+- [x] `doc/MIGRATION_CLOSED.md` ditulis (2026-09-24) — SHA = commit "Step 11 gate passed" di `migration/20.0`.

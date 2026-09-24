@@ -19,8 +19,8 @@
 | 8 — Code Review | 0 | 0 | |
 | 9 — Dev Testing | 0 | 0 | |
 | 10 — QA Testing | 0 | 0 | |
-| 11 — UAT Sign-off | 0 | 0 | Draft skrip UAT ditulis AI; eksekusi & sign-off menunggu manusia (di luar hitungan prompt AI). |
-| **Total** | **2** | **0** | |
+| 11 — UAT Sign-off | 1 | 0 | "UAT sign-off pakai bukti test AI, tutup migrasinya" — sign-off berbasis bukti test AI (penyimpangan eksplisit) + penutupan migrasi. |
+| **Total** | **3** | **0** | |
 
 Step 2–10 berjalan tanpa prompt tambahan user (prinsip "Eksekusi Berkelanjutan"); satu-satunya titik henti adalah dialog intake Step 1.
 
