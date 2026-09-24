@@ -139,7 +139,7 @@ Ringkasan cepat — detail lengkap tiap step ada di field `Status:` di header ma
 | 7 | Data Migration Scripts | `07_DATA_MIGRATION_PLAN.md` + script — cuma kalau upgrade instance | — N/A (port kode saja, intake §3) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✔️ Lulus 2026-09-24 (skill odoo-review; 0🔴 0🟡 2🔵) | ✔️ Lulus |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✔️ Lulus 2026-09-24 (Run A/B/C: 0 failed of 43; AC-07-05 tertutup) | ✔️ Lulus |
-| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✔️ Lulus 2026-09-24 (6/6 skenario, A/B 19↔20 identik) | ✔️ Lulus |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
