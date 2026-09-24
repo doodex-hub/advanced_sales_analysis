@@ -135,8 +135,8 @@ Ringkasan cepat — detail lengkap tiap step ada di field `Status:` di header ma
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai 2026-09-24 | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✔️ Lulus 2026-09-24 (100% covered, 0 finding terbuka) | ✔️ Lulus |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai 2026-09-24 (38 AC) | — |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — (disiplin per-fase A1→G2) |
-| 7 | Data Migration Scripts | `07_DATA_MIGRATION_PLAN.md` + script — cuma kalau upgrade instance | ⬜ Belum mulai / — (n/a kalau port kode saja) | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai 2026-09-24 (A1, A5, A6; G1 #3 0 failed of 43) | — (disiplin per-fase A1→G2) |
+| 7 | Data Migration Scripts | `07_DATA_MIGRATION_PLAN.md` + script — cuma kalau upgrade instance | — N/A (port kode saja, intake §3) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |

@@ -10,13 +10,16 @@
 # - Gotcha G1: WAJIB `docker compose down -v` sebelum tiap rerun --test-enable (kalau tidak, modul
 #   sudah terinstall -> instalasi & test di-skip diam-diam, "0 tests").
 #
+# Postgres 16: Odoo 20 memperingatkan "Postgres version 150019, lower than minimum required 160000"
+# kalau pakai postgres:15 (G1 Run A 2026-09-24) -> dinaikkan ke postgres:16.
+#
 # ADDONS_PATH default = Community saja (sama seperti baseline G1 19.0 = image odoo:19.0 Community).
 # Untuk run Enterprise-like: set env ASA_ADDONS_PATH=/odoo20/addons,/enterprise20,/mnt/extra-addons.
 name: advanced_sales_analysis_migration_20
 
 services:
   db:
-    image: postgres:15
+    image: postgres:16
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo

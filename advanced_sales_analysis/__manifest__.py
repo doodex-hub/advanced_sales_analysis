@@ -15,7 +15,7 @@
     'website': "https://www.doodex.net/",
 
     'category': 'Sales',
-    'version': '19.0.1.0.0',
+    'version': '20.0.1.0.0',
 
     'depends': ['base','sale','account','sale_management'],
 
@@ -23,7 +23,10 @@
         # 'security/ir.model.access.csv',
     ],
 
-    'images': ['static/description/banner.png'],
+    'images': [
+       'static/description/banner.gif',
+       'static/description/icon.png',
+    ],
     'license': 'LGPL-3',
     'price': 20,
     'currency': "USD",

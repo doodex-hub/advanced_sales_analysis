@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import fields, models, api
+from odoo.tools import SQL
 
 class SaleReport(models.Model):
     _inherit = "sale.report"
@@ -10,12 +11,12 @@ class SaleReport(models.Model):
     amount_to_invoice = fields.Float(string='Amount To Invoice', readonly=True)
     waiting_for_payment = fields.Float(string='Waiting for Payment', readonly=True)
 
-    def _select_additional_fields(self):
-        res = super()._select_additional_fields()
-        res['amount_received'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.amount_received) ELSE 0 END"
-        res['waiting_for_payment'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.waiting_for_payment) ELSE 0 END"
-        res['amount_to_invoice'] = "CASE WHEN l.product_id IS NOT NULL THEN SUM(l.asa_amount_to_invoice) ELSE 0 END"
-        return res
+    def _select_dict(self, table):
+        return super()._select_dict(table) | {
+            'amount_received': SQL("CASE WHEN %s IS NOT NULL THEN SUM(%s) ELSE 0 END", table.product_id, table.amount_received),
+            'waiting_for_payment': SQL("CASE WHEN %s IS NOT NULL THEN SUM(%s) ELSE 0 END", table.product_id, table.waiting_for_payment),
+            'amount_to_invoice': SQL("CASE WHEN %s IS NOT NULL THEN SUM(%s) ELSE 0 END", table.product_id, table.asa_amount_to_invoice),
+        }
 
 
 

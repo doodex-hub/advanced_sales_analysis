@@ -6,6 +6,12 @@ LANGSUNG lewat SQL — mem-bypass cache ORM. Setiap test di sini WAJIB memanggil
 `self.env.flush_all()` sebelum query, kalau tidak nilai stored-compute yang baru ditulis di
 transaksi yang sama belum ada di database dan hasilnya nol/nilai lama.
 Lihat doc-dev-backfill/records/advanced_sales_analysis/SUMMARY.md CAND-03.
+
+MIGRASI 19.0->20.0 (2026-09-24): core 20.0 menghapus hook `_select_additional_fields()` dan
+membangun query lewat `_table_sql` -> `_select_dict(table)` (lihat
+doc-dev/migration_19.0_20.0/doc/FINDINGS.md MF-01). Rujukan `_select_additional_fields()`/
+`_select_pos()`/`_group_by_sale()` di docstring test lama di bawah adalah riwayat versi <=19.0;
+padanannya di 20.0: `_select_dict()`/`_select_pos_dict()`/`_groupby_list()`.
 """
 
 from odoo.tests import tagged
@@ -196,3 +202,58 @@ class TestAsaSaleReport(AdvancedSalesAnalysisCommon):
             amount_received_report, 100.0, places=2,
             msg="amount_received ternyata ikut dikonversi — perbarui FINDINGS.md F-05",
         )
+
+    def test_ac_07_03b_group_by_nama_baris_20_0(self):
+        """MF-03 (migrasi 19.0->20.0): core 20.0 `_groupby_list()` menambah `l.name` ke GROUP BY.
+
+        Dua baris produk & harga SAMA tapi deskripsi BEDA -> 2 baris laporan di 20.0 (19.0: 1).
+        Perubahan core yang diterima (preseden MF-01 17->18), bukan perilaku modul. Total measure
+        modul tetap jumlah kedua baris SO.
+        """
+        order = self.env['sale.order'].create({
+            'partner_id': self.partner_a.id,
+            'order_line': [
+                (0, 0, {'product_id': self.asa_product.id, 'name': 'Deskripsi A',
+                        'product_uom_qty': 1.0, 'price_unit': 50.0}),
+                (0, 0, {'product_id': self.asa_product.id, 'name': 'Deskripsi B',
+                        'product_uom_qty': 1.0, 'price_unit': 50.0}),
+            ],
+        })
+        order.action_confirm()
+        invoice = self._invoice_so(order)
+        self._pay(invoice)
+        order.order_line.invalidate_recordset()
+
+        rows = self._report_rows(order)
+        self.assertEqual(len(rows), 2, "MF-03: granularitas 20.0 memisahkan baris per deskripsi")
+        self.assertAlmostEqual(sum(rows.mapped('amount_received')), 100.0)
+        self.assertAlmostEqual(
+            sum(rows.mapped('amount_received')), sum(order.order_line.mapped('amount_received')),
+        )
+
+    def test_ac_07_06_select_dict_hook_dipakai(self):
+        """MF-01 (migrasi 19.0->20.0): regression guard port hook `sale.report`.
+
+        Hook lama `_select_additional_fields()` tidak ada lagi di core 20.0 — override dengan nama
+        itu akan diam-diam tidak pernah dipanggil (kolom jadi NULL, pivot crash `SUM(text)`).
+        Pastikan 3 kolom modul masuk lewat `_select_dict()` dan tetap TIDAK dikonversi kurs (BSL-014).
+        """
+        report = self.env['sale.report']
+        self.assertFalse(
+            hasattr(report, '_select_additional_fields'),
+            "sale.report punya _select_additional_fields lagi — cek apakah core/modul berubah",
+        )
+        query = self.env['sale.order.line'].sudo()._search([])
+        select = report._select_dict(query.table)
+        expected = {
+            'amount_received': 'amount_received',
+            'waiting_for_payment': 'waiting_for_payment',
+            'amount_to_invoice': 'asa_amount_to_invoice',
+        }
+        for fname, column in expected.items():
+            self.assertIn(fname, select, f"{fname} tidak ada di _select_dict()")
+            code = select[fname]._sql_tuple[0]
+            self.assertIn('SUM(', code)
+            self.assertIn(f'"{column}"', code)
+            self.assertNotIn('currency_rate', code, f"{fname} ikut dikalikan kurs (melanggar BSL-014)")
+            self.assertNotIn('consolidation_rate', code, f"{fname} ikut dikalikan kurs (melanggar BSL-014)")
