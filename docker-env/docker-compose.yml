@@ -1,21 +1,18 @@
-# Diinstansiasi dari doc-dev-backfill/templates/docker-compose.yml.template (2026-08-18), diadaptasi
-# untuk migration-tool Step 6 G1 (2026-08-21), diperbarui untuk project migrasi 18.0->19.0 (2026-08-26):
-# - Volume mount diarahkan ke `advanced_sales_analysis/` DI DALAM target-codebase INI
-#   (`advanced-sales-analysis-migration-19`, branch `migration/19.0_target`) — G1 harus menguji kode
-#   yang benar-benar dimigrasi (manifest version 19.0.1.0.0), bukan kode project 17->18 lama.
-# - `name:` project di-rename `..._migration_19` supaya tidak collide dengan container project
-#   17->18 (`..._migration_18`) yang mungkin masih ada di Docker Desktop dev.
-# - `-d` database name di-rename `..._test_19` dengan alasan yang sama (hindari collide DB lama).
+# Diinstansiasi ulang untuk project migrasi 19.0->20.0 (2026-09-24), menggantikan compose 19.0
+# (masih ada di git: `git show migration/19.0:docker-env/docker-compose.yml`).
+# - Odoo 20.0 FROM SOURCE (lihat Dockerfile): odoo20 (+ enterprise20) di-bind-mount read-only.
+# - Mount HANYA sub-folder advanced_sales_analysis/ dari target-codebase ini (branch migration/20.0).
+# - `name:`/db/port diberi suffix _20 supaya tidak bentrok dengan stack 19.0 lama
+#   (advanced_sales_analysis_migration_19) atau stack pos_margin_sale_migration_20 (port 8078).
+# - HOST/USER/PASSWORD env var TIDAK diterjemahkan otomatis (tidak ada entrypoint image resmi) ->
+#   --db_host dst dipasang eksplisit di command.
+# - --http-interface=0.0.0.0 wajib di 20.0 kalau server perlu dijangkau dari host (knowledge 19-to-20).
+# - Gotcha G1: WAJIB `docker compose down -v` sebelum tiap rerun --test-enable (kalau tidak, modul
+#   sudah terinstall -> instalasi & test di-skip diam-diam, "0 tests").
 #
-# Catatan penyimpangan dari template (disengaja, dicatat, masih berlaku, warisan project 17->18):
-# 1. `build: .` + `shm_size` dipakai SEJAK AWAL (bukan `image: odoo:19.0` lalu diganti saat Step 07)
-#    — lihat komentar di docker-env/Dockerfile.
-# 2. Volume `odoo-data` untuk /var/lib/odoo ditambahkan supaya filestore ikut persist bersama
-#    db-data, bukan hilang tiap container diganti.
-# 3. Service `mailpit`/`greenmail` DIHAPUS — modul tidak menyentuh email sama sekali.
-#
-# Root repo != root addon: yang di-mount adalah SUB-FOLDER advanced_sales_analysis/, bukan root repo.
-name: advanced_sales_analysis_migration_19
+# ADDONS_PATH default = Community saja (sama seperti baseline G1 19.0 = image odoo:19.0 Community).
+# Untuk run Enterprise-like: set env ASA_ADDONS_PATH=/odoo20/addons,/enterprise20,/mnt/extra-addons.
+name: advanced_sales_analysis_migration_20
 
 services:
   db:
@@ -32,23 +29,26 @@ services:
     shm_size: '2gb'
     depends_on:
       - db
-    environment:
-      HOST: db
-      USER: odoo
-      PASSWORD: odoo
     ports:
-      - "8078:8069"
+      - "8080:8069"
     volumes:
-      - D:/Kuncoro/doodex/repo/advanced-sales-analysis-migration-19/advanced_sales_analysis:/mnt/extra-addons/advanced_sales_analysis
+      - D:/Kuncoro/doodex/repo/odoo20:/odoo20:ro
+      - D:/Kuncoro/doodex/repo/enterprise20:/enterprise20:ro
+      - D:/Kuncoro/doodex/repo/advanced-sales-analysis-migration-20/advanced_sales_analysis:/mnt/extra-addons/advanced_sales_analysis
       - odoo-data:/var/lib/odoo
       - ./logs:/var/log/odoo
+    # Mode G1 + test suite (install -> jalankan test modul -> berhenti).
     command: >
-      odoo -d advanced_sales_analysis_test_19
+      python3 /odoo20/odoo-bin
+      -d advanced_sales_analysis_test_20
+      --db_host=db --db_user=odoo --db_password=odoo
+      --data-dir=/var/lib/odoo
       -i advanced_sales_analysis
-      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+      --addons-path=${ASA_ADDONS_PATH:-/odoo20/addons,/mnt/extra-addons}
       --test-enable
       --test-tags=/advanced_sales_analysis
       --stop-after-init
+      --http-interface=0.0.0.0
       --logfile=/var/log/odoo/odoo.log
 
 volumes:

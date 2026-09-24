@@ -1,25 +1,55 @@
-# Diinstansiasi dari doc-dev-backfill/templates/Dockerfile.template (2026-08-18), diadaptasi untuk
-# migration-tool Step 6 G1 (2026-08-21): base image dinaikkan ke odoo:18.0 (target migrasi saat itu).
-# Dipasang SEJAK AWAL (bukan ditambahkan belakangan saat Step 07) supaya tidak terjadi transisi
-# `image:` -> `build:` di tengah jalan, yang terbukti bikin filestore ir.attachment hilang
-# sementara volume Postgres tetap ada.
+# Diinstansiasi ulang untuk project migrasi 19.0->20.0 (2026-09-24), menggantikan Dockerfile 19.0
+# (FROM odoo:19.0, masih ada di git: `git show migration/19.0:docker-env/Dockerfile`).
 #
-# UPDATE 2026-08-26 (project migrasi 18.0->19.0): base image dinaikkan ke odoo:19.0. Tag ini
-# BELUM diverifikasi tersedia di Docker Hub oleh AI (tidak ada akses jaringan di sesi ini) —
-# kalau `docker compose build` gagal dengan "manifest not found"/"pull access denied", ini
-# indikasi tag resmi belum/berbeda nama, bukan kesalahan Dockerfile lain. Pola fallback
-# `pip3 install --break-system-packages ... || pip3 install ...` (lesson 2026-07-29
-# `purchase_product_optional`, WAJIB dipakai kedua arah, bukan salah satu) dipertahankan apa
-# adanya dari versi 18.0 — kemungkinan besar masih perlu untuk 19.0 (base Ubuntu image Odoo
-# biasanya makin baru per major version, PEP 668 externally-managed-environment kemungkinan
-# masih berlaku), belum dikonfirmasi eksekusi langsung.
-FROM odoo:19.0
-USER root
-RUN apt-get update && apt-get install -y --no-install-recommends wget gnupg ca-certificates \
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+# TIDAK ADA image resmi odoo:20.0 di Docker Hub (knowledge/version-diffs/19-to-20.md, dicek terakhir
+# 2026-09-22 oleh project pos-margin-sale). Jadi Odoo 20.0 dijalankan FROM SOURCE: checkout lokal
+# D:\Kuncoro\doodex\repo\odoo20 (+ enterprise20) di-bind-mount read-only saat runtime, BUKAN di-copy
+# ke image. Dockerfile ini disalin dari pos-margin-sale-migration-20/docker-env/Dockerfile.20
+# (sudah terbukti jalan untuk G1/Tour test 20.0) supaya layer cache Docker bisa dipakai ulang.
+#
+# Python 3.12 karena odoo20/requirements.txt mem-pin paket ke `python_version >= '3.12'`.
+# wkhtmltopdf sengaja tidak dipasang (modul tidak punya report PDF).
+FROM python:3.12-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libxml2-dev \
+    libxslt1-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    libssl-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpq-dev \
+    libffi-dev \
+    postgresql-client \
+    fonts-dejavu-core \
+    fonts-freefont-ttf \
+    fonts-font-awesome \
+    fonts-roboto-unhinted \
+    gsfonts \
+    node-less \
+    npm \
+    git \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# requirements.txt = salinan persis odoo20/requirements.txt (build context tidak bisa menjangkau
+# folder di luar docker-env/).
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Chrome headless + websocket-client untuk HttpCase.browser_js (tests/test_qa_browser.py).
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg \
+    && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends google-chrome-stable \
     && rm -rf /var/lib/apt/lists/* \
-    && (pip3 install --break-system-packages websocket-client || pip3 install websocket-client)
+    && pip install --no-cache-dir websocket-client
+
+RUN useradd -m -d /home/odoo -s /bin/bash odoo
+RUN mkdir -p /var/log/odoo /var/lib/odoo && chown odoo:odoo /var/log/odoo /var/lib/odoo
+
 USER odoo
