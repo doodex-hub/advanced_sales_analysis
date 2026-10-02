@@ -2,7 +2,7 @@
 
 **Modul:** advanced_sales_analysis
 **Migrasi:** 18.0 → 19.0
-**Terakhir update:** 2026-08-26
+**Terakhir update:** 2026-10-02
 
 ---
 
@@ -11,6 +11,7 @@
 | ID | Judul | Ditemukan di Step | Tag | Prioritas | Status |
 |---|---|---|---|---|---|
 | MF-01 | Core `sale.order.line.tax_id` di-rename `tax_ids` di 19.0 — modul memanggil field ini langsung, `AttributeError` kalau tidak difix | Step 2 (Diff Analysis) | `[GAP-MIGRASI]` | **Kritis** | ✅ **RESOLVED** 2026-08-26 — fix mekanis diterapkan langsung tanpa eskalasi (lihat catatan di bawah) |
+| MF-04 | `account.move.amount_paid`/`amount_paid_cn` tidak di-reset ke 0 saat pembayaran di-unreconcile (field stored basi) | Review pasca-rilis 2026-10-02 | `[WARISAN-SOURCE]` | Rendah | ✅ DITERIMA 2026-10-02 — terbukti, tanpa dampak laporan, tidak diperbaiki |
 
 ---
 
@@ -30,6 +31,19 @@
 - `advanced_sales_analysis/models/sale_report.py:114,118`: rename `line.tax_id`→`line.tax_ids` (lihat `06_implementation/06c_IMPLEMENTATION_LOG.md` [Fase A5]).
 - `advanced_sales_analysis/tests/test_sale_order_line.py`: test baru `test_ac_06_03b_tax_ids_rename_price_include` ditambahkan khusus memverifikasi fix ini lewat jalur pajak `price_include` (jalur yang tidak tersentuh test lain).
 - **Diverifikasi eksekusi (G1, 2026-08-26):** `0 failed, 0 error(s) of 39 tests`. Tidak ada warning/error baru selain yang sudah diketahui (`[BSL-017]`).
+
+---
+
+### MF-04 — `amount_paid` / `amount_paid_cn` basi setelah unreconcile
+**Ditemukan di:** review kode pasca-rilis (bukan migrasi), 2026-10-02. Diuji di Docker pada 18.0, 19.0, dan 20.0.
+**Tag:** `[WARISAN-SOURCE]` — quirk lama (BSL-011), ada identik di 18.0/19.0/20.0.
+**Lokasi:** `advanced_sales_analysis/models/sale_report.py` `AccountMove._compute_amount_paid`
+**Deskripsi:** compute hanya meng-assign `amount_paid`/`amount_paid_cn` di dalam `if payment_state in [paid, in_payment, partial]`. Tanpa assign, compute stored di core tidak menimpa nilai lama (`odoo/orm/fields.py` `compute_value`), jadi nilai tetap bila faktur kembali ke `not_paid`.
+**Reproduksi:** SO 100 → faktur diposting → bayar penuh (`amount_paid`=100) → `account.move.line.remove_move_reconcile` pada baris receivable. Hasil di 18/19/20 sama: `payment_state`=not_paid, `amount_residual`=100, **`amount_paid` tetap 100**.
+**Dampak:** tidak ada pada laporan. `sale.order.line.amount_received`=0 dan `waiting_for_payment`=100 langsung benar setelah unreconcile, karena nilai `amount_paid` hanya dibaca saat faktur berstatus bayar, dan saat itu compute dijalankan ulang (depends `amount_residual`). Hanya field stored di faktur yang basi; tidak ada view atau consumer lain.
+**Keputusan:** diterima, tidak diperbaiki (kode dipertahankan). Kalau diperbaiki kelak: `move.amount_paid = move.amount_paid_cn = 0.0` di awal loop, bump patch, publish 18/19/20 sekaligus.
+**Dugaan yang dibantah pada review yang sama:** deteksi uang muka via nama produk `"Down payment"` (BSL-013). Skenario DP 50% → bayar DP → faktur akhir → bayar penuh menghasilkan angka identik di 18/19/20 dan total akhir benar (Amount Received 100, Waiting 0). Di 19/20 baris DP tidak punya produk sehingga cabang nama itu tidak pernah aktif, tanpa efek ke angka akhir.
+**Catatan penomoran:** ID MF-04 diseragamkan dengan FINDINGS 19.0→20.0 atas permintaan pemilik project.
 
 ---
 
