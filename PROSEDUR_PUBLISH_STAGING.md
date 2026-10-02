@@ -3,6 +3,64 @@
 Sumber: bagian "Prosedur per repo" di `publish-staging-git-odoo-store-log.md`, diperkuat dengan pelajaran dari insiden `pos_margin_sale` dan audit manifest `images`.
 Tanda **[BARU]** = tambahan penguatan yang tidak ada di log asli (perintah, checklist, verifikasi).
 
+## PLAYBOOK EKSEKUSI OTONOM (instruksi untuk Claude)
+
+Dokumen ini dibaca Claude lalu dieksekusi **end-to-end sampai `origin/[versi]` tanpa bertanya**, kecuali kena kondisi STOP di bawah. Bagian setelah ini adalah rincian tiap langkah yang menjadi acuan eksekusi.
+
+### Cara memanggil
+User cukup menulis, misalnya: `ikuti PROSEDUR_PUBLISH_STAGING.md untuk repo X versi 20.0` (boleh beberapa versi: `16.0 17.0 18.0 19.0`; boleh "semua repo" dengan daftar path).
+Input minimal: **path repo** dan **versi**. Nama modul diambil otomatis dari folder level-1 yang berisi `__manifest__.py`. Jangan tanyakan hal yang bisa dibaca dari repo.
+
+### Otorisasi
+- Pemanggilan playbook = izin eksplisit untuk: commit di `staging/[versi]`, `push` ke `staging/[versi]`, merge ke `[versi]`, `push` ke `[versi]`, **hanya di repo target yang disebut user**.
+- Tetap dilarang: `push --force` ke `[versi]`, menyentuh repo lain, menghapus branch remote, mem-bump version, mengubah kode modul (selain koreksi manifest/README di Langkah 3b).
+- Kalau `CLAUDE.md` repo target melarang `push`, **jangan push**: selesaikan semua langkah lokal, lalu berikan perintah push bernomor untuk dev, kemudian berhenti.
+
+### Aturan keputusan default (jangan tanya, pakai ini)
+| Ambiguitas | Keputusan |
+|---|---|
+| `origin/staging/[versi]` sudah ada | Pakai yang ada (`reset --hard origin/staging/[versi]`), cek/cleaning, jangan dibuat ulang. |
+| Hasil cleaning kosong | SKIP, tidak ada commit. Catat "sudah bersih". |
+| `README.md` root | Hapus untuk versi 18.0/19.0/20.0. Untuk 16.0/17.0: adaptasi baris versi, jangan hapus. Placeholder kosong: hapus. |
+| `README.md` modul | Selalu dipertahankan, hanya baris `Odoo version: X` disamakan. Tidak ada README: biarkan. |
+| Prefix `version` manifest salah | Koreksi prefix saja (bukan bump). |
+| `images` manifest tidak sesuai file nyata | Samakan dengan `banner.gif` + `icon.png` yang benar-benar ada. |
+| Working tree "modified" banyak | Cek `git diff --stat`; kalau insertion == deletion → noise CRLF → `git checkout -- .`. Kalau tidak sama → STOP. |
+| Merge menghasilkan merge commit (bukan fast-forward) | Wajar, lanjut, catat. |
+| Push staging "Everything up-to-date" padahal ada commit baru | Branch basi → reset ke origin, ulangi Langkah 5. Jangan lapor sukses. |
+| Banyak repo / banyak versi | Ikuti bagian "Urutan eksekusi banyak repo": audit paralel → eksekusi berurutan → verifikasi paralel. |
+| Bahasa commit | Inggris. Tambahkan atribusi Co-Authored-By sesuai instruksi sesi. |
+
+### Kondisi STOP (satu-satunya alasan boleh bertanya/berhenti)
+1. Working tree kotor dengan perubahan nyata (bukan noise CRLF).
+2. `migration/[versi]` tidak ada di lokal maupun origin.
+3. Merge ke `[versi]` konflik, atau `origin/[versi]` punya commit yang tidak ada di staging **dan** bukan hasil merge sebelumnya (butuh keputusan: jangan force).
+4. Auth/push gagal setelah satu kali perbaikan remote URL.
+5. File yang akan dihapus ternyata direferensikan manifest (`data`/`assets`/`depends`) sehingga modul akan rusak.
+6. `version` manifest tidak berawalan versi branch dan bukan pola koreksi sederhana (`N.0.x.y`).
+
+Di luar enam kondisi itu: **jalan terus**, jangan minta konfirmasi per langkah.
+
+### Urutan kerja Claude (per repo per versi)
+1. Langkah 0 → pra-syarat. (Langkah 0b: **jangan bump**; hanya periksa prefix versi.)
+2. Langkah 1–2 → fetch, siapkan `staging/[versi]`.
+3. Langkah 3 → cleaning (3a hapus, 3b sesuaikan, 3c checklist; semua level folder).
+4. Langkah 4 → commit (kalau ada perubahan) + push staging.
+5. Langkah 5 → reset staging ke origin, sinkronkan `[versi]`, merge, push.
+6. Langkah 6 → verifikasi remote vs remote; kalau gagal, perbaiki lalu ulangi (maksimal 2 kali), setelah itu STOP.
+
+### Format laporan akhir (satu blok, ringkas)
+```
+Repo: <nama> | Versi: <versi>
+staging/<versi>: DONE|SKIP  <hash lama>→<hash baru>   (alasan SKIP bila ada)
+<versi>:         DONE|SKIP  <hash lama>→<hash baru>
+Verifikasi: diff staging=publish OK | sisa file terlarang: 0 | banner.png: 0 | icon.png: ada
+Catatan: <koreksi README/manifest, merge commit, dll. atau "-">
+```
+Untuk banyak repo: satu blok per repo, lalu satu tabel rangkuman. Setelah itu, tambahkan baris ke `publish-staging-git-odoo-store-log.md` hanya jika user memintanya.
+
+---
+
 ## Gambaran alur
 
 ```
