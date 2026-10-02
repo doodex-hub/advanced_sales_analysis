@@ -2,7 +2,7 @@
 
 **Modul:** advanced_sales_analysis
 **Migrasi:** 19.0 → 20.0
-**Terakhir update:** 2026-09-24
+**Terakhir update:** 2026-10-02
 
 > Finding yang sengaja TETAP TERBUKA dari migrasi sebelumnya (tidak dicatat ulang sebagai finding baru): AC-07-05 (UNION `sale.report` dengan `point_of_sale` terinstall belum pernah dieksekusi di versi manapun), serta 15 quirk BSL-011…BSL-021 (`[DIWARISI-SOURCE]`, dipertahankan identik). Lihat `doc-dev/migration_18.0_19.0/doc/FINDINGS.md`.
 
@@ -15,6 +15,7 @@
 | MF-01 | Hook `sale.report._select_additional_fields()` dihapus di 20.0 — 3 measure diam-diam 0/NULL, pivot crash `sum(text)` | Step 1 (pre-scan), dibuktikan Step 2 probe | `[GAP-MIGRASI]` | **Kritis** | ✅ RESOLVED 2026-09-24 — port `_select_dict` (commit `83e8719`), G1 A/B/C 0 failed of 43 |
 | MF-02 | `pos_sale` 20.0 mengisi kolom modul `sale.report.amount_to_invoice` untuk baris POS (19.0: NULL) | Step 1 | `[GAP-MIGRASI]` | Rendah | ✅ DIPUTUSKAN dev 2026-09-24: terima & dokumentasikan |
 | MF-03 | Core 20.0 menambah `l.name`/`l.product_uom_id` ke GROUP BY `sale.report` — granularitas baris laporan lebih halus | Step 2 | `[GAP-MIGRASI]` | Rendah | ✅ Diterima (preseden MF-01 17→18); dikonfirmasi pemilik project saat UAT sign-off 2026-09-24 |
+| MF-04 | `account.move.amount_paid`/`amount_paid_cn` tidak di-reset ke 0 saat pembayaran di-unreconcile (field stored basi) | Review pasca-rilis 2026-10-02 | `[WARISAN-SOURCE]` | Rendah | ✅ DITERIMA 2026-10-02 — terbukti, tanpa dampak laporan, tidak diperbaiki |
 
 ---
 
@@ -47,6 +48,19 @@
 **Deskripsi:** `_groupby_list()` 20.0 menambah `l.name` dan `l.product_uom_id`. Dua baris SO produk+harga sama tapi deskripsi beda kini jadi 2 baris laporan.
 **Dampak:** hanya granularitas baris di view list/pivot tanpa group-by; total measure identik. Modul tidak meng-override GROUP BY sejak 17.0 dan tidak boleh mulai melakukannya.
 **Keputusan:** diterima mengikuti preseden (AI, 2026-09-24, dicatat supaya dev bisa mengoreksi). Test regresi baru di Step 6 merekam perilaku 20.0.
+
+---
+
+### MF-04 — `amount_paid` / `amount_paid_cn` basi setelah unreconcile
+**Ditemukan di:** review kode pasca-rilis (bukan migrasi), 2026-10-02. Diuji di Docker pada 18.0, 19.0, dan 20.0.
+**Tag:** `[WARISAN-SOURCE]` — quirk lama (BSL-011), ada identik di 18.0/19.0/20.0.
+**Lokasi:** `advanced_sales_analysis/models/sale_report.py` `AccountMove._compute_amount_paid`
+**Deskripsi:** compute hanya meng-assign `amount_paid`/`amount_paid_cn` di dalam `if payment_state in [paid, in_payment, partial]`. Tanpa assign, compute stored di core tidak menimpa nilai lama (`odoo/orm/fields.py` `compute_value`), jadi nilai tetap bila faktur kembali ke `not_paid`.
+**Reproduksi:** SO 100 → faktur diposting → bayar penuh (`amount_paid`=100) → `account.move.line.remove_move_reconcile` pada baris receivable. Hasil di 18/19/20 sama: `payment_state`=not_paid, `amount_residual`=100, **`amount_paid` tetap 100**.
+**Dampak:** tidak ada pada laporan. `sale.order.line.amount_received`=0 dan `waiting_for_payment`=100 langsung benar setelah unreconcile, karena nilai `amount_paid` hanya dibaca saat faktur berstatus bayar, dan saat itu compute dijalankan ulang (depends `amount_residual`). Hanya field stored di faktur yang basi; tidak ada view atau consumer lain.
+**Keputusan:** diterima, tidak diperbaiki (kode dipertahankan). Kalau diperbaiki kelak: `move.amount_paid = move.amount_paid_cn = 0.0` di awal loop, bump patch, publish 18/19/20 sekaligus.
+**Dugaan yang dibantah pada review yang sama:** deteksi uang muka via nama produk `"Down payment"` (BSL-013). Skenario DP 50% → bayar DP → faktur akhir → bayar penuh menghasilkan angka identik di 18/19/20 dan total akhir benar (Amount Received 100, Waiting 0). Di 19/20 baris DP tidak punya produk sehingga cabang nama itu tidak pernah aktif, tanpa efek ke angka akhir.
+**Catatan penomoran:** ID MF-04 diseragamkan dengan FINDINGS 19.0→20.0 atas permintaan pemilik project.
 
 ---
 
